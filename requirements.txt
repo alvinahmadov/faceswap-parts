@@ -1,0 +1,17 @@
+numpy
+opencv-python
+Keras
+Keras-Applications
+Keras-Preprocessing
+keras-vggface
+imageio
+imageio-ffmpeg
+matplotlib
+moviepy
+Pillow
+PyYAML
+tensorboard
+tensorflow
+tensorflow-estimator
+tensorflow-probability==0.15.0
+ipython
