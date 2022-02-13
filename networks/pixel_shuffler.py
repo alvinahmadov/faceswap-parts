@@ -2,9 +2,9 @@
 # by t-ae
 # https://gist.github.com/t-ae/6e1016cc188104d123676ccef3264981
 
-import keras.backend as K
-from keras.engine.topology import Layer
-from keras.utils import conv_utils
+import tensorflow.python.keras.backend as K
+from tensorflow.python.keras.engine.base_layer import Layer
+from tensorflow.python.keras.utils import conv_utils
 
 
 class PixelShuffler(Layer):
@@ -45,7 +45,7 @@ class PixelShuffler(Layer):
             return out
         pass
 
-    def compute_output_shape(self, input_shape) -> tuple[int, int, int, int]:
+    def compute_output_shape(self, input_shape):
         if len(input_shape) != 4:
             raise ValueError(f"Inputs should have rank 4;\nReceived input shape: {str(input_shape)}\n")
 

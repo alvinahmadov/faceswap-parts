@@ -1,6 +1,8 @@
-from keras import backend as K
-from keras import initializers, regularizers
-from keras.engine import Layer, InputSpec
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras import initializers, regularizers
+
+from tensorflow.python.keras.engine.base_layer import Layer
+from tensorflow.python.keras.engine.input_spec import InputSpec
 
 
 def to_list(x):
@@ -80,7 +82,7 @@ class GroupNormalization(Layer):
         self.built = True
         pass
 
-    def call(self, inputs, mask=None):
+    def call(self, inputs, mask=None, **kwargs):
         input_shape = K.int_shape(inputs)
         if len(input_shape) != 4 and len(input_shape) != 2:
             raise ValueError(

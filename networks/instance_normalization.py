@@ -1,7 +1,8 @@
-from keras import backend as K
-from keras import initializers, regularizers, constraints
-from keras.engine import Layer, InputSpec
-from keras.utils.generic_utils import get_custom_objects
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras import initializers, regularizers, constraints
+from tensorflow.python.keras.utils.generic_utils import get_custom_objects
+from tensorflow.python.keras.engine.base_layer import Layer
+from tensorflow.python.keras.engine.input_spec import InputSpec
 
 
 class InstanceNormalization(Layer):

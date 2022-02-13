@@ -1,9 +1,9 @@
-import keras.backend as K
 import tensorflow as tf
+import tensorflow.python.keras.backend as K
 import tensorflow_probability as tfp
-from keras.layers import Lambda, concatenate
+from tensorflow.python.keras.layers import Lambda, concatenate
 
-from instance_normalization import InstanceNormalization
+from networks.instance_normalization import InstanceNormalization
 
 
 def first_order(x, axis=1):

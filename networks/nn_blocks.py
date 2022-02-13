@@ -1,14 +1,19 @@
-import keras.backend as K
 import tensorflow as tf
-from keras.layers import *
-from keras.layers.advanced_activations import LeakyReLU
-from tensorflow.keras import regularizers
+import tensorflow.python.keras.backend as K
+from keras.layers import BatchNormalization
+from tensorflow.python.keras.layers import (
+    Conv2D, Reshape, Lambda, Permute,
+    Softmax, Activation, UpSampling2D,
+    add, concatenate, multiply
+)
+from tensorflow.python.keras.layers.advanced_activations import LeakyReLU
+from tensorflow.python.keras import regularizers
 
-from custom_inits.icnr_initializer import icnr_keras
-from custom_layers.scale_layer import Scale
-from group_normalization import GroupNormalization
-from instance_normalization import InstanceNormalization
-from pixel_shuffler import PixelShuffler
+from .custom_inits.icnr_initializer import icnr_keras
+from .custom_layers.scale_layer import Scale
+from .group_normalization import GroupNormalization
+from .instance_normalization import InstanceNormalization
+from .pixel_shuffler import PixelShuffler
 
 KERN_INIT = 'he_normal'
 W_L2 = 1e-4
@@ -129,23 +134,23 @@ def normalization(inp, norm='none', group=16):
 
 
 def _conv_block(input_tensor, group, use_norm=False, kernel_size=3, strides=2, w_l2=W_L2, norm='none',
-                activation_fn=None):
+                activation: str = 'relu'):
     x = input_tensor
+    print(x)
     x = Conv2D(group, kernel_size=kernel_size, strides=strides, kernel_regularizer=regularizers.l2(w_l2),
                kernel_initializer=KERN_INIT, use_bias=False, padding="same")(x)
-    x = activation_fn(x)
+    x = Activation("relu")(x) if activation == 'relu' else LeakyReLU(alpha=0.2)(x)
     x = normalization(x, norm, group) if use_norm else x
     return x
 
 
 def conv_block(input_tensor, group, use_norm=False, strides=2, w_l2=W_L2, norm='none'):
-    return _conv_block(input_tensor, group, use_norm, strides=strides, w_l2=w_l2, norm=norm,
-                       activation_fn=Activation("relu"))
+    return _conv_block(input_tensor, group, use_norm, strides=strides, w_l2=w_l2, norm=norm)
 
 
 def conv_block_d(input_tensor, group, use_norm=False, w_l2=W_L2, norm='none'):
     return _conv_block(input_tensor, group, use_norm, 4, 2, w_l2, norm,
-                       activation_fn=LeakyReLU(alpha=0.2))
+                       activation='leakyrelu')
 
 
 def res_block(input_tensor, group, use_norm=False, w_l2=W_L2, norm='none'):

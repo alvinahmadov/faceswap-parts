@@ -1,7 +1,7 @@
-from keras import backend as K
-from keras import initializers
-from keras.engine import InputSpec
-from keras.layers import Layer
+import tensorflow.python.keras.backend as K
+from tensorflow.python.keras import initializers
+from tensorflow.python.keras.engine.base_layer import Layer
+from tensorflow.python.keras.engine.input_spec import InputSpec
 
 
 class Scale(Layer):
@@ -34,6 +34,7 @@ class Scale(Layer):
     ------
     https://github.com/flyyufelix/cnn_finetune/blob/master/custom_layers/scale_layer.py
     """
+
     def __init__(self, weights=None, axis=-1, gamma_init='zero', **kwargs):
         self.axis = axis
         self.gamma = None
@@ -46,15 +47,14 @@ class Scale(Layer):
 
         # Compatibility with TensorFlow >= 1.0.0
         self.gamma = K.variable(self.gamma_init((1,)), name='{}_gamma'.format(self.name))
-        self.trainable_weights = [self.gamma]
-
+        self.trainable_weights.append(self.gamma)
         if self.initial_weights is not None:
             self.set_weights(self.initial_weights)
             del self.initial_weights
             pass
         pass
 
-    def call(self, x, mask=None):
+    def call(self, x, mask=None, **kwargs):
         return self.gamma * x
 
     def get_config(self):
