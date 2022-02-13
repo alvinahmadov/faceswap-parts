@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
+from tensorflow.python.keras import backend as K
 
 from detector import mtcnn_detect_face
 
@@ -13,6 +13,9 @@ class MTCNNFaceDetector:
     Load the MTCNN network and perform face detection.
     
     Attributes:
+        pnet: GraphExecutionFunction
+        rnet: GraphExecutionFunction
+        onet: GraphExecutionFunction
         model_path: path to the MTCNN weights files
     """
 
