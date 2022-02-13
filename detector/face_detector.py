@@ -5,8 +5,8 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
-
 from detector import mtcnn_detect_face
+
 
 class MTCNNFaceDetector:
     """
