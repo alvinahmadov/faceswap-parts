@@ -79,7 +79,7 @@ class MTCNNFaceDetector:
             pass
         return faces, pnts
 
-    def auto_downscale(self, image) -> tuple[np.ndarray, float]:
+    def auto_downscale(self, image):
         if self.is_higher_than_1080p(image):
             scale_factor = 4
             resized_image = cv2.resize(image,
@@ -164,6 +164,8 @@ class MTCNNFaceDetector:
             if compute_area(face) >= min_area:
                 new_faces.append(face)
                 new_pnts.append(pnt)
+                pass
+            pass
         new_faces = np.array(new_faces)
         new_pnts = np.array(new_pnts).transpose()
         return new_faces, new_pnts
