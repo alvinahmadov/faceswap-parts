@@ -207,7 +207,7 @@ class Network:
                 feed_in = tf.reshape(inp, [-1, dim])
                 pass
             else:
-                feed_in, dim = (inp, input_shape[-1].value)
+                feed_in, dim = (inp, input_shape[-1])
                 pass
             weights = self.make_var('weights', shape=[dim, num_out])
             biases = self.make_var('biases', [num_out])
@@ -227,7 +227,7 @@ class Network:
         max_axis = tf.reduce_max(target, axis, keepdims=True)
         target_exp = tf.exp(target - max_axis)
         normalize = tf.reduce_sum(target_exp, axis, keepdims=True)
-        softmax = tf.compat.v1.div(target_exp, normalize, name)
+        softmax = tf.math.divide(target_exp, normalize, name)
         return softmax
 
 
@@ -247,6 +247,8 @@ class PNet(Network):
 
         (self.feed('PReLU3')  # pylint: disable=no-value-for-parameter
          .conv(1, 1, 4, 1, 1, relu=False, name='conv4-2'))
+        pass
+    pass
 
 
 class RNet(Network):
@@ -268,6 +270,8 @@ class RNet(Network):
 
         (self.feed('prelu4')  # pylint: disable=no-value-for-parameter
          .fc(4, relu=False, name='conv5-2'))
+        pass
+    pass
 
 
 class ONet(Network):
@@ -295,6 +299,8 @@ class ONet(Network):
 
         (self.feed('prelu5')  # pylint: disable=no-value-for-parameter
          .fc(10, relu=False, name='conv6-3'))
+        pass
+    pass
 
 
 def create_mtcnn(sess, model_path):
@@ -821,7 +827,7 @@ def nms(boxes, threshold, method):
         w = np.maximum(0.0, xx2 - xx1 + 1)
         h = np.maximum(0.0, yy2 - yy1 + 1)
         inter = w * h
-        if method is 'Min':
+        if method == 'Min':
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)
