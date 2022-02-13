@@ -12,7 +12,7 @@ AVERAGE_LANDMARKS = [
 ]
 
 
-def get_src_landmarks(x0, x1, y0, y1, pnts) -> list[tuple[int, int]]:
+def get_src_landmarks(x0, x1, y0, y1, pnts):
     """
     Parameters
     ------
@@ -31,7 +31,7 @@ def get_src_landmarks(x0, x1, y0, y1, pnts) -> list[tuple[int, int]]:
     return src_landmarks
 
 
-def get_tar_landmarks(img: np.ndarray) -> list[tuple[int, int]]:
+def get_tar_landmarks(img: np.ndarray):
     """
     Parameters
     ------
@@ -48,7 +48,7 @@ def get_tar_landmarks(img: np.ndarray) -> list[tuple[int, int]]:
 
 
 # noinspection PyPep8Naming
-def landmarks_match_mtcnn(src_image, src_landmarks, tar_landmarks) -> np.ndarray:
+def landmarks_match_mtcnn(src_image, src_landmarks, tar_landmarks):
     """
     src/dst landmarks coordinates should be (y, x)
     """
