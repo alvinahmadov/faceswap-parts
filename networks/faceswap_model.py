@@ -1,5 +1,3 @@
-import os
-
 from tensorflow.python.keras import Input
 from tensorflow.python.keras.layers import Dense, Flatten
 from tensorflow.python.keras.models import Model
@@ -442,70 +440,3 @@ class FaceswapModel:
 
     pass
 
-
-if __name__ == '__main__':
-    K.set_learning_phase(1)
-    # Number of CPU cores
-    num_cpus = os.cpu_count()
-
-    # Input/Output resolution
-    RESOLUTION = 64  # 64x64, 128x128, 256x256
-    assert (RESOLUTION % 64) == 0, "RESOLUTION should be 64, 128, or 256."
-
-    batch_size = 4
-
-    # Use motion blur (data augmentation)
-    # set True if training data contains images extracted from videos
-    use_da_motion_blur = False
-
-    # Use eye-aware training
-    # require images generated from prep_binary_masks.ipynb
-    use_bm_eyes = True
-
-    # Probability of random color matching (data augmentation)
-    prob_random_color_match = 0.5
-
-    da_config = {
-        "prob_random_color_match": prob_random_color_match,
-        "use_da_motion_blur": use_da_motion_blur,
-        "use_bm_eyes": use_bm_eyes
-    }
-
-    # Path to training images
-    img_dir_src = './face_src/rgb'  # source face
-    img_dir_dst = './face_dst/rgb'  # target face
-    img_dir_src_bm_eyes = "./face_src/binary_mask"
-    img_dir_dst_bm_eyes = "./face_dst/binary_mask"
-
-    # Path to saved model weights
-    models_dir = "./models"
-
-    # Architecture configuration
-    arch_config = {
-        "IMAGE_SHAPE": (RESOLUTION, RESOLUTION, 3),
-        "use_self_attn": True,
-        "norm": "hybrid",
-        "model_capacity": "lite"
-    }
-
-    # Loss function weights configuration
-    loss_weights = {
-        "w_D": 0.1,
-        "w_recon": 1.,
-        "w_edge": 0.1,
-        "w_eyes": 30.,
-        "w_pl": (0.01, 0.1, 0.3, 0.1)
-    }
-
-    # Init. loss config.
-    loss_config = {
-        "gan_training": "mixup_LSGAN",
-        "use_PL": False,
-        "PL_before_activ": True,
-        "use_mask_hinge_loss": False,
-        "m_mask": 0.,
-        "lr_factor": 1.,
-        "use_cyclic_loss": False
-    }
-    model = FaceswapModel(**arch_config)
-    pass
