@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from six import string_types, iteritems
+import os
 
-import numpy as np
-import tensorflow as tf
 # from math import floor
 import cv2
-import os
+import numpy as np
+import tensorflow as tf
+from six import string_types, iteritems
 
 """Source: https://github.com/davidsandberg/facenet/blob/master/src/align/"""
 
