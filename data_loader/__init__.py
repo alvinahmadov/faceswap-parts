@@ -84,13 +84,10 @@ class DataLoader:
                 Tout=[tf.float32, tf.float32, tf.float32]
             ),
             num_parallel_calls=self.num_cpus
-        )
-        dataset = dataset.apply(
-            dataset.batch(
+        ).batch(
                 batch_size=batch_size,
                 num_parallel_calls=self.num_cpus,
                 drop_remainder=True
-            )
         )
 
         dataset = dataset.repeat()
