@@ -439,4 +439,3 @@ class FaceswapModel:
         return self.path_abgr_src([[img]])
 
     pass
-
