@@ -96,9 +96,8 @@ class DataLoader:
         dataset = dataset.repeat()
         dataset = dataset.prefetch(32)
 
-        iterator = dataset.make_one_shot_iterator()
-        next_element = iterator.get_next()
-        return next_element
+        iterator = iter(dataset)
+        return next(iterator)
 
     def get_next_batch(self):
         return self.session.run(self.data_iter_next)
