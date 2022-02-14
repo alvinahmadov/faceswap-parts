@@ -15,13 +15,32 @@ import warnings
 from keras.layers import BatchNormalization
 from tensorflow.python.keras import backend as K
 
-from keras_vggface import utils
 from tensorflow.python.keras import layers
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.utils import layer_utils
 from tensorflow.python.keras.utils.data_utils import get_file
 # noinspection PyProtectedMember
 from keras_applications.imagenet_utils import _obtain_input_shape
+
+
+V1_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v1.npy'
+V2_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v2.npy'
+
+VGG16_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_vgg16.h5'
+VGG16_WEIGHTS_PATH_NO_TOP = \
+    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_vgg16.h5'
+
+
+RESNET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_resnet50.h5'
+RESNET50_WEIGHTS_PATH_NO_TOP = \
+    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_resnet50.h5'
+
+SENET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_senet50.h5'
+SENET50_WEIGHTS_PATH_NO_TOP = \
+    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_senet50.h5'
+
+
+VGGFACE_DIR = 'models/vggface'
 
 
 def vgg16(include_top=True, weights='vggface',
@@ -73,12 +92,12 @@ def vgg16(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = get_file('rcmalli_vggface_tf_vgg16.h5',
-                                    utils.VGG16_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    VGG16_WEIGHTS_PATH,
+                                    cache_subdir=VGGFACE_DIR)
         else:
             weights_path = get_file('rcmalli_vggface_tf_notop_vgg16.h5',
-                                    utils.VGG16_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    VGG16_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=VGGFACE_DIR)
         model.load_weights(weights_path, by_name=True)
 
         if K.image_data_format() == 'channels_first':
@@ -202,8 +221,7 @@ def RESNET50(include_top=True, weights='vggface',
         pass
 
     x = layers.Conv2D(
-        64, (7, 7), use_bias=False, strides=(2, 2), padding='same',
-        name='conv1/7x7_s2')(img_input)
+        64, (7, 7), use_bias=False, strides=(2, 2), padding='same', name='conv1/7x7_s2')(img_input)
     x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn')(x)
     x = layers.Activation('relu')(x)
     x = layers.MaxPooling2D((3, 3), strides=(2, 2))(x)
@@ -240,13 +258,13 @@ def RESNET50(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = get_file('rcmalli_vggface_tf_resnet50.h5',
-                                    utils.RESNET50_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    RESNET50_WEIGHTS_PATH,
+                                    cache_subdir=VGGFACE_DIR)
             pass
         else:
             weights_path = get_file('rcmalli_vggface_tf_notop_resnet50.h5',
-                                    utils.RESNET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    RESNET50_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=VGGFACE_DIR)
             pass
         model.load_weights(weights_path)
 
@@ -448,12 +466,12 @@ def SENET50(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = get_file('rcmalli_vggface_tf_senet50.h5',
-                                    utils.SENET50_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    SENET50_WEIGHTS_PATH,
+                                    cache_subdir=VGGFACE_DIR)
         else:
             weights_path = get_file('rcmalli_vggface_tf_notop_senet50.h5',
-                                    utils.SENET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    SENET50_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=VGGFACE_DIR)
         model.load_weights(weights_path)
 
         if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
