@@ -62,7 +62,6 @@ def vgg16(include_top=True, weights='vggface',
             img_input = input_tensor
 
     x = conv_block(img_input)
-    K.batch_normalization()
     if include_top:
         # Classification block
         x = layers.Flatten(name='flatten')(x)
@@ -498,7 +497,7 @@ def conv_block(input_tensor):
 
         return layers.MaxPooling2D((2, 2), strides=(2, 2), name=name_pool)(input_)
 
-    x = input_tensor.copy()
+    x = input_tensor
 
     x = _conv_block(x, 64, 2, name_conv='conv1', name_pool='pool1')
     x = _conv_block(x, 128, 2, name_conv='conv2', name_pool='pool2')
