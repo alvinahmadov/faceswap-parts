@@ -11,7 +11,7 @@ moviepy
 Pillow
 PyYAML
 tensorboard
-tensorflow
+tensorflow==2.7.0
 tensorflow-estimator
 tensorflow-probability==0.15.0
 ipython
