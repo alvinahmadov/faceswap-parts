@@ -66,30 +66,34 @@ class DataLoader:
             use_da_motion_blur,
             use_bm_eyes
     ):
-        tf_fns = tf.constant(filenames, dtype=tf.string)  # use tf_fns=filenames is also fine
-        dataset = tf.data.Dataset.from_tensor_slices(tf_fns)
-        dataset = dataset.shuffle(len(filenames))
-        dataset = dataset.map(
-            map_func=lambda fnames: tf.py_function(
-                func=read_image,
-                inp=[
-                    fnames,
-                    fns_all_trn_data,
-                    dir_bm_eyes,
-                    resolution,
-                    prob_random_color_match,
-                    use_da_motion_blur,
-                    use_bm_eyes
-                ],
-                Tout=[tf.float32, tf.float32, tf.float32]
-            ),
-            num_parallel_calls=self.num_cpus
-        ).batch(
+        def map_and_batch(dataset_: tf.data.Dataset):
+            dataset_.map(
+                map_func=lambda fnames: tf.py_function(
+                    func=read_image,
+                    inp=[
+                        fnames,
+                        fns_all_trn_data,
+                        dir_bm_eyes,
+                        resolution,
+                        prob_random_color_match,
+                        use_da_motion_blur,
+                        use_bm_eyes
+                    ],
+                    Tout=[tf.float32, tf.float32, tf.float32]
+                ),
+                num_parallel_calls=self.num_cpus
+            ).batch(
                 batch_size=batch_size,
                 num_parallel_calls=self.num_cpus,
                 drop_remainder=True
-        )
+            )
+            pass
 
+        tf_fns = tf.constant(filenames, dtype=tf.string)  # use tf_fns=filenames is also fine
+        dataset = tf.data.Dataset.from_tensor_slices(tf_fns)
+        dataset = dataset.shuffle(len(filenames))
+
+        dataset = dataset.apply(map_and_batch)
         dataset = dataset.repeat()
         dataset = dataset.prefetch(32)
 
