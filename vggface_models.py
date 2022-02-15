@@ -227,7 +227,7 @@ def RESNET50(include_top=True, weights='vggface',
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
 
-    x = RESNET(x)
+    x = resnet(x)
 
     x = AveragePooling2D((7, 7), name='avg_pool')(x)
 
@@ -509,7 +509,7 @@ def conv_block(input_tensor):
 
 
 # noinspection PyPep8Naming
-def RESNET(x):
+def resnet(x):
     def _resnet_block(input_, stage: int, blocks: int, filters: list):
         strides = (1, 1) if stage == 2 else (2, 2)
         for block in range(1, blocks + 1):
