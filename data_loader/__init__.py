@@ -67,7 +67,7 @@ class DataLoader:
             use_bm_eyes
     ):
         def map_and_batch(dataset_: tf.data.Dataset):
-            dataset_.map(
+            return dataset_.map(
                 map_func=lambda fnames: tf.py_function(
                     func=read_image,
                     inp=[
@@ -87,7 +87,6 @@ class DataLoader:
                 num_parallel_calls=self.num_cpus,
                 drop_remainder=True
             )
-            pass
 
         tf_fns = tf.constant(filenames, dtype=tf.string)  # use tf_fns=filenames is also fine
         dataset = tf.data.Dataset.from_tensor_slices(tf_fns)
