@@ -67,7 +67,7 @@ class DataLoader:
             use_bm_eyes
     ):
         def map_func(fnames):
-            tf.py_function(
+            return tf.py_function(
                 func=read_image,
                 inp=[
                     fnames,
