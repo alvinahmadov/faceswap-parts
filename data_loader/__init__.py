@@ -89,12 +89,12 @@ class DataLoader:
                 use_bm_eyes
             )
 
-        def map_and_batch(dataset_):
+        def map_and_batch(dataset_: tf.data.Dataset):
             return dataset_.map(
-                map_func, num_parallel_calls=self.num_cpus
+                map_func, num_parallel_calls=self.num_cpus if tf.executing_eagerly else None
             ).batch(
                 batch_size=batch_size,
-                num_parallel_calls=self.num_cpus,
+                num_parallel_calls=self.num_cpus if tf.executing_eagerly else None,
                 drop_remainder=True
             )
 
