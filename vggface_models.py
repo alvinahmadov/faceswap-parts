@@ -135,23 +135,21 @@ def resnet_identity_block(input_tensor, kernel_size, filters, stage, block,
         bn_axis = 3
     else:
         bn_axis = 1
-    conv1_reduce_name = 'conv' + str(stage) + "_" + str(block) + "_1x1_reduce"
-    conv1_increase_name = 'conv' + str(stage) + "_" + str(
-        block) + "_1x1_increase"
-    conv3_name = 'conv' + str(stage) + "_" + str(block) + "_3x3"
+    conv1_reduce_name = f"conv{stage}_{block}_1x1_reduce"
+    conv1_increase_name = f"conv{stage}_{block}_1x1_increase"
+    conv3_name = f"conv{stage}_{block}_3x3"
 
     x = Conv2D(filters1, (1, 1), use_bias=bias, name=conv1_reduce_name)(
         input_tensor)
-    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_reduce_name}/bn")(x)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters2, kernel_size, use_bias=bias,
-               padding='same', name=conv3_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn")(x)
+    x = Conv2D(filters2, kernel_size, use_bias=bias, padding='same', name=conv3_name)(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv3_name}/bn")(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), use_bias=bias, name=conv1_increase_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_increase_name}/bn")(x)
 
     x = add([x, input_tensor])
     x = Activation('relu')(x)
@@ -165,29 +163,27 @@ def resnet_conv_block(input_tensor, kernel_size, filters, stage, block,
         bn_axis = 3
     else:
         bn_axis = 1
-    conv1_reduce_name = 'conv' + str(stage) + "_" + str(block) + "_1x1_reduce"
-    conv1_increase_name = 'conv' + str(stage) + "_" + str(
-        block) + "_1x1_increase"
-    conv1_proj_name = 'conv' + str(stage) + "_" + str(block) + "_1x1_proj"
-    conv3_name = 'conv' + str(stage) + "_" + str(block) + "_3x3"
+    conv1_reduce_name = f"conv{stage}_{block}_1x1_reduce"
+    conv1_increase_name = f"conv{stage}_{block}_1x1_increase"
+    conv1_proj_name = f"conv{stage}_{block}_1x1_proj"
+    conv3_name = f"conv{stage}_{block}_3x3"
 
     x = Conv2D(filters1, (1, 1), strides=strides, use_bias=bias,
                name=conv1_reduce_name)(input_tensor)
-    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_reduce_name}/bn")(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias,
                name=conv3_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv3_name}/bn")(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), name=conv1_increase_name, use_bias=bias)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_increase_name}/bn")(x)
 
-    shortcut = Conv2D(filters3, (1, 1), strides=strides, use_bias=bias,
-                      name=conv1_proj_name)(input_tensor)
-    shortcut = BatchNormalization(axis=bn_axis, name=conv1_proj_name + "/bn")(
-        shortcut)
+    shortcut = Conv2D(filters3, (1, 1), strides=strides, use_bias=bias, name=conv1_proj_name)(
+        input_tensor)
+    shortcut = BatchNormalization(axis=bn_axis, name=f"{conv1_proj_name}/bn")(shortcut)
 
     x = add([x, shortcut])
     x = Activation('relu')(x)
@@ -222,12 +218,13 @@ def RESNET50(include_top=True, weights='vggface',
         pass
 
     x = Conv2D(
-        64, (7, 7), use_bias=False, strides=(2, 2), padding='same', name='conv1/7x7_s2')(img_input)
+        64, (7, 7), use_bias=False, strides=(2, 2), padding='same', name='conv1/7x7_s2'
+    )(img_input)
     x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn')(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
 
-    x = resnet(x)
+    x = _resnet_blocks(x)
 
     x = AveragePooling2D((7, 7), name='avg_pool')(x)
 
@@ -423,25 +420,7 @@ def SENET50(include_top=True, weights='vggface',
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
 
-    x = senet_conv_block(x, 3, [64, 64, 256], stage=2, block=1, strides=(1, 1))
-    x = senet_identity_block(x, 3, [64, 64, 256], stage=2, block=2)
-    x = senet_identity_block(x, 3, [64, 64, 256], stage=2, block=3)
-
-    x = senet_conv_block(x, 3, [128, 128, 512], stage=3, block=1)
-    x = senet_identity_block(x, 3, [128, 128, 512], stage=3, block=2)
-    x = senet_identity_block(x, 3, [128, 128, 512], stage=3, block=3)
-    x = senet_identity_block(x, 3, [128, 128, 512], stage=3, block=4)
-
-    x = senet_conv_block(x, 3, [256, 256, 1024], stage=4, block=1)
-    x = senet_identity_block(x, 3, [256, 256, 1024], stage=4, block=2)
-    x = senet_identity_block(x, 3, [256, 256, 1024], stage=4, block=3)
-    x = senet_identity_block(x, 3, [256, 256, 1024], stage=4, block=4)
-    x = senet_identity_block(x, 3, [256, 256, 1024], stage=4, block=5)
-    x = senet_identity_block(x, 3, [256, 256, 1024], stage=4, block=6)
-
-    x = senet_conv_block(x, 3, [512, 512, 2048], stage=5, block=1)
-    x = senet_identity_block(x, 3, [512, 512, 2048], stage=5, block=2)
-    x = senet_identity_block(x, 3, [512, 512, 2048], stage=5, block=3)
+    x = _senet_blocks(x)
 
     x = AveragePooling2D((7, 7), name='avg_pool')(x)
 
@@ -508,22 +487,41 @@ def conv_block(input_tensor):
     return x
 
 
-# noinspection PyPep8Naming
-def resnet(x):
-    def _resnet_block(input_, stage: int, blocks: int, filters: list):
-        strides = (1, 1) if stage == 2 else (2, 2)
-        for block in range(1, blocks + 1):
-            if block == 1:
-                input_ = resnet_conv_block(input_, 3, filters, stage, block, strides=strides)
-            else:
-                input_ = resnet_identity_block(input_, 3, filters, stage, block)
-                pass
-            pass
-        return input_
+def _net_blocks(input_, stage: int, blocks: int, filters: list, net: str = 'RES'):
+    strides = (1, 1) if stage == 2 else (2, 2)
+    if net == 'RES':
+        conv_block_fn = resnet_conv_block
+        identity_block_fn = resnet_identity_block
+    elif net == 'SE':
+        conv_block_fn = senet_conv_block
+        identity_block_fn = senet_identity_block
+    else:
+        raise ValueError("Net must be RESNET or SENET")
 
-    x = _resnet_block(x, stage=2, blocks=3, filters=[64, 64, 256])
-    x = _resnet_block(x, stage=3, blocks=4, filters=[128, 128, 512])
-    x = _resnet_block(x, stage=4, blocks=6, filters=[256, 256, 1024])
-    x = _resnet_block(x, stage=5, blocks=3, filters=[512, 512, 2048])
+    for block in range(1, blocks + 1):
+        if block == 1:
+            input_ = conv_block_fn(input_, 3, filters, stage, block, strides=strides)
+        else:
+            input_ = identity_block_fn(input_, 3, filters, stage, block)
+            pass
+        pass
+    return input_
+
+
+def _resnet_blocks(x):
+    x = _net_blocks(x, stage=2, blocks=3, filters=[64, 64, 256])
+    x = _net_blocks(x, stage=3, blocks=4, filters=[128, 128, 512])
+    x = _net_blocks(x, stage=4, blocks=6, filters=[256, 256, 1024])
+    x = _net_blocks(x, stage=5, blocks=3, filters=[512, 512, 2048])
+
+    return x
+
+
+def _senet_blocks(x):
+    net = "SE"
+    x = _net_blocks(x, stage=2, blocks=3, filters=[64, 64, 256], net=net)
+    x = _net_blocks(x, stage=3, blocks=4, filters=[128, 128, 512], net=net)
+    x = _net_blocks(x, stage=4, blocks=6, filters=[256, 256, 1024], net=net)
+    x = _net_blocks(x, stage=5, blocks=3, filters=[512, 512, 2048], net=net)
 
     return x
