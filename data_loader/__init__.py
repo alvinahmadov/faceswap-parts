@@ -66,22 +66,32 @@ class DataLoader:
             use_da_motion_blur,
             use_bm_eyes
     ):
+        def map_func(fnames):
+            tf.py_function(
+                func=read_image,
+                inp=[
+                    fnames,
+                    fns_all_trn_data,
+                    dir_bm_eyes,
+                    resolution,
+                    prob_random_color_match,
+                    use_da_motion_blur,
+                    use_bm_eyes
+                ],
+                Tout=[tf.float32, tf.float32, tf.float32]
+            ) if tf.executing_eagerly else read_image(
+                fnames,
+                fns_all_trn_data,
+                dir_bm_eyes,
+                resolution,
+                prob_random_color_match,
+                use_da_motion_blur,
+                use_bm_eyes
+            )
+
         def map_and_batch(dataset_: tf.data.Dataset):
             return dataset_.map(
-                map_func=lambda fnames: tf.py_function(
-                    func=read_image,
-                    inp=[
-                        fnames,
-                        fns_all_trn_data,
-                        dir_bm_eyes,
-                        resolution,
-                        prob_random_color_match,
-                        use_da_motion_blur,
-                        use_bm_eyes
-                    ],
-                    Tout=[tf.float32, tf.float32, tf.float32]
-                ),
-                num_parallel_calls=self.num_cpus
+                map_func, num_parallel_calls=self.num_cpus
             ).batch(
                 batch_size=batch_size,
                 num_parallel_calls=self.num_cpus,
