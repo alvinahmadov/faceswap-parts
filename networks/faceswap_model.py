@@ -317,44 +317,44 @@ class FaceswapModel:
         weights_gen_dst = self.net_gen_dst.trainable_weights
 
         # Define training functions
-        training_updates = Adam(
-            learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
-        ).minimize(loss_disc_src, [], weights_disc_src)
+        # training_updates = Adam(
+        #     learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
+        # ).minimize(loss_disc_src, [], weights_disc_src)
 
         self.net_disc_train_src = K.function(
             [self.distorted_src, self.real_src],
             [loss_disc_src],
-            training_updates
+            # training_updates
         )
-        training_updates = Adam(
-            learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
-        ).minimize(loss_gen_src, [], weights_gen_src)
+        # training_updates = Adam(
+        #     learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
+        # ).minimize(loss_gen_src, [], weights_gen_src)
 
         self.net_gen_train_src = K.function(
             [self.distorted_src, self.real_src, self.mask_eyes_src],
             [loss_gen_src, loss_adv_gen_src, loss_recon_gen_src, loss_edge_gen_src,
              loss_pl_gen_src],
-            training_updates
+            # training_updates
         )
 
-        training_updates = Adam(
-            learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
-        ).minimize(loss_disc_dst, [], weights_disc_dst)
+        # training_updates = Adam(
+        #     learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
+        # ).minimize(loss_disc_dst, [], weights_disc_dst)
 
         self.net_disc_train_dst = K.function(
             [self.distorted_dst, self.real_dst],
             [loss_disc_dst],
-            training_updates
+            # training_updates
         )
 
-        training_updates = Adam(
-            learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
-        ).minimize(loss_gen_dst, [], weights_gen_dst)
+        # training_updates = Adam(
+        #     learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
+        # ).minimize(loss_gen_dst, [], weights_gen_dst)
 
         self.net_gen_train_dst = K.function(
             [self.distorted_dst, self.real_dst, self.mask_eyes_dst],
             [loss_gen_dst, loss_adv_gen_dst, loss_recon_gen_dst, loss_edge_gen_dst, loss_pl_gen_dst],
-            training_updates
+            # training_updates
         )
 
     def build_pl_model(self, vggface_model, before_activ=False):
