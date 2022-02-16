@@ -1,3 +1,4 @@
+import tensorflow
 from tensorflow.python.keras import Input
 from tensorflow.python.keras.layers import Dense, Flatten
 from tensorflow.python.keras.models import Model
@@ -63,7 +64,7 @@ class FaceswapModel:
             model_capacity=self.model_capacity
         )
         self.decoder_src = self.build_decoder(
-            nc_in=self.enc_nc_out,
+            num_input_channels=self.enc_nc_out,
             input_size=8,
             output_size=self.image_shape[0],
             use_self_attn=self.use_self_attn,
@@ -71,7 +72,7 @@ class FaceswapModel:
             model_capacity=self.model_capacity
         )
         self.decoder_dst = self.build_decoder(
-            nc_in=self.enc_nc_out,
+            num_input_channels=self.enc_nc_out,
             input_size=8,
             output_size=self.image_shape[0],
             use_self_attn=self.use_self_attn,
@@ -147,7 +148,7 @@ class FaceswapModel:
         return Model(inputs=inputs, outputs=out)
 
     @staticmethod
-    def build_decoder(nc_in=512,
+    def build_decoder(num_input_channels=512,
                       input_size=8,
                       output_size=64,
                       use_self_attn=True,
@@ -158,7 +159,7 @@ class FaceswapModel:
         activ_map_size = input_size
         use_norm = False if norm == 'none' else True
 
-        inp = Input(shape=(input_size, input_size, nc_in))
+        inp = Input(shape=(input_size, input_size, num_input_channels))
         x = inp
         x = upscale_block(x, 256 // coef, use_norm, norm=norm)
         x = upscale_block(x, 128 // coef, use_norm, norm=norm)
@@ -186,7 +187,7 @@ class FaceswapModel:
     def build_discriminator(nc_in,
                             input_size=64,
                             use_self_attn=True,
-                            norm='none') -> Model:
+                            norm='none'):
         activ_map_size = input_size
         use_norm = False if (norm == 'none') else True
 
@@ -348,7 +349,7 @@ class FaceswapModel:
 
         training_updates = Adam(
             learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
-        ).get_updates(loss_gen_dst, [], weights_gen_dst)
+        ).minimize(loss_gen_dst, [], weights_gen_dst)
 
         self.net_gen_train_dst = K.function(
             [self.distorted_dst, self.real_dst, self.mask_eyes_dst],
