@@ -317,7 +317,7 @@ class FaceswapModel:
 
         # Define training functions
         training_updates = Adam(
-            lr=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
+            learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
         ).get_updates(loss_disc_src, weights_disc_src)
 
         self.net_disc_train_src = K.function(
@@ -326,8 +326,8 @@ class FaceswapModel:
             training_updates
         )
         training_updates = Adam(
-            lr=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
-        ).get_updates(loss_gen_src, weights_gen_src)
+            learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
+        ).minimize(loss_gen_src, [], weights_gen_src)
 
         self.net_gen_train_src = K.function(
             [self.distorted_src, self.real_src, self.mask_eyes_src],
@@ -337,8 +337,8 @@ class FaceswapModel:
         )
 
         training_updates = Adam(
-            lr=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
-        ).get_updates(loss_disc_dst, weights_disc_dst)
+            learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
+        ).minimize(loss_disc_dst, [], weights_disc_dst)
 
         self.net_disc_train_dst = K.function(
             [self.distorted_dst, self.real_dst],
@@ -347,8 +347,8 @@ class FaceswapModel:
         )
 
         training_updates = Adam(
-            lr=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
-        ).get_updates(loss_gen_dst, weights_gen_dst)
+            learning_rate=self.learning_rate_gen * loss_config['lr_factor'], beta_1=0.5
+        ).get_updates(loss_gen_dst, [], weights_gen_dst)
 
         self.net_gen_train_dst = K.function(
             [self.distorted_dst, self.real_dst, self.mask_eyes_dst],
