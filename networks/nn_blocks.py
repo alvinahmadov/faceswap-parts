@@ -135,10 +135,8 @@ def normalization(inp, norm='none', group=16):
 
 def _conv_block(input_tensor, group, use_norm=False, kernel_size=3, strides=2, w_l2=W_L2, norm='none',
                 activation: str = 'relu'):
-    x = input_tensor
-    print(x)
     x = Conv2D(group, kernel_size=kernel_size, strides=strides, kernel_regularizer=regularizers.l2(w_l2),
-               kernel_initializer=KERN_INIT, use_bias=False, padding="same")(x)
+               kernel_initializer=KERN_INIT, use_bias=False, padding="same")(input_tensor)
     x = Activation("relu")(x) if activation == 'relu' else LeakyReLU(alpha=0.2)(x)
     x = normalization(x, norm, group) if use_norm else x
     return x
@@ -154,9 +152,8 @@ def conv_block_d(input_tensor, group, use_norm=False, w_l2=W_L2, norm='none'):
 
 
 def res_block(input_tensor, group, use_norm=False, w_l2=W_L2, norm='none'):
-    x = input_tensor
     x = Conv2D(group, kernel_size=3, kernel_regularizer=regularizers.l2(w_l2),
-               kernel_initializer=KERN_INIT, use_bias=False, padding="same")(x)
+               kernel_initializer=KERN_INIT, use_bias=False, padding="same")(input_tensor)
     x = LeakyReLU(alpha=0.2)(x)
     x = normalization(x, norm, group) if use_norm else x
     x = Conv2D(group, kernel_size=3, kernel_regularizer=regularizers.l2(w_l2),
@@ -181,11 +178,9 @@ def spade_res_block(input_tensor, cond_input_tensor, group, use_norm=True, norm=
     """
 
     def spade(input_tensor_, cond_input_tensor_, group_, use_norm_=True, norm_='none'):
-        x_ = input_tensor_
-        x_ = normalization(x_, norm_, group_) if use_norm_ else x_
-        y_ = cond_input_tensor_
+        x_ = normalization(input_tensor_, norm_, group_) if use_norm_ else input_tensor_
         y_ = Conv2D(128, kernel_size=3, kernel_regularizer=regularizers.l2(W_L2),
-                    kernel_initializer=KERN_INIT, padding='same')(y_)
+                    kernel_initializer=KERN_INIT, padding='same')(cond_input_tensor_)
         y_ = Activation('relu')(y_)
         gamma = Conv2D(group_, kernel_size=3, kernel_regularizer=regularizers.l2(W_L2),
                        kernel_initializer=KERN_INIT, padding='same')(y_)
@@ -195,8 +190,7 @@ def spade_res_block(input_tensor, cond_input_tensor, group, use_norm=True, norm=
         x_ = add([x_, beta])
         return x_
 
-    x = input_tensor
-    x = spade(x, cond_input_tensor, group, use_norm, norm)
+    x = spade(input_tensor, cond_input_tensor, group, use_norm, norm)
     x = Activation('relu')(x)
     x = reflect_padding_2d(x)
     x = Conv2D(group, kernel_size=3, kernel_regularizer=regularizers.l2(W_L2),
