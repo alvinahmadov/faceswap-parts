@@ -318,7 +318,7 @@ class FaceswapModel:
         # Define training functions
         training_updates = Adam(
             learning_rate=self.learning_rate_disc * loss_config['lr_factor'], beta_1=0.5
-        ).get_updates(loss_disc_src, weights_disc_src)
+        ).minimize(loss_disc_src, [], weights_disc_src)
 
         self.net_disc_train_src = K.function(
             [self.distorted_src, self.real_src],
