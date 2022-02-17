@@ -12,35 +12,42 @@ VGGFace models for Keras.
 
 import warnings
 
-from keras.layers import BatchNormalization
-from tensorflow.python.keras import backend as K
-
-from tensorflow.python.keras.layers import (
-    Input, Activation, Conv2D, Reshape,
-    Flatten, Dense, MaxPooling2D, AveragePooling2D,
-    GlobalAveragePooling2D, GlobalMaxPooling2D,
-    add, multiply
+from keras import backend as K
+from keras.engine.topology import get_source_inputs
+from keras.layers import (
+    Flatten, Dense, Input, GlobalAveragePooling2D,
+    GlobalMaxPooling2D, Activation, Conv2D, MaxPooling2D,
+    BatchNormalization, AveragePooling2D, Reshape, multiply, add
 )
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.utils import layer_utils
-from tensorflow.python.keras.utils.data_utils import get_file
-# noinspection PyProtectedMember
-from keras_applications.imagenet_utils import _obtain_input_shape
+from keras.models import Model
+from keras.utils.data_utils import get_file
+from keras.utils.layer_utils import convert_dense_weights_data_format
 
 V1_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v1.npy'
 V2_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v2.npy'
 
-VGG16_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_vgg16.h5'
+# vgg16 constants
+VGG16_WEIGHTS_FILE = "rcmalli_vggface_tf_vgg16.h5"
+VGG16_WEIGHTS_PATH = f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{VGG16_WEIGHTS_FILE}"
+
+VGG16_WEIGHTS_FILE_NO_TOP = "rcmalli_vggface_tf_notop_vgg16.h5"
 VGG16_WEIGHTS_PATH_NO_TOP = \
-    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_vgg16.h5'
+    f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{VGG16_WEIGHTS_FILE_NO_TOP}"
 
-RESNET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_resnet50.h5'
+# RESnet50 constants
+RESNET50_WEIGHTS_FILE = "rcmalli_vggface_tf_resnet50.h5"
+RESNET50_WEIGHTS_PATH = f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{RESNET50_WEIGHTS_FILE}"
+RESNET50_WEIGHTS_FILE_NO_TOP = "rcmalli_vggface_tf_notop_resnet50.h5"
 RESNET50_WEIGHTS_PATH_NO_TOP = \
-    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_resnet50.h5'
+    f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{RESNET50_WEIGHTS_FILE_NO_TOP}"
 
-SENET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_senet50.h5'
+# SEnet50 constants
+SENET50_WEIGHTS_FILE = "rcmalli_vggface_tf_senet50.h5"
+SENET50_WEIGHTS_PATH = f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{SENET50_WEIGHTS_FILE}"
+
+SENET50_WEIGHTS_FILE_NO_TOP = "rcmalli_vggface_tf_notop_senet50.h5"
 SENET50_WEIGHTS_PATH_NO_TOP = \
-    'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_senet50.h5'
+    f"https://github.com/rcmalli/keras-vggface/releases/download/v2.0/{SENET50_WEIGHTS_FILE_NO_TOP}"
 
 VGGFACE_DIR = 'models/vggface'
 
@@ -84,7 +91,7 @@ def vgg16(include_top=True, weights='vggface',
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
     if input_tensor is not None:
-        inputs = layer_utils.get_source_inputs(input_tensor)
+        inputs = get_source_inputs(input_tensor)
     else:
         inputs = img_input
         pass
@@ -106,7 +113,7 @@ def vgg16(include_top=True, weights='vggface',
                 maxpool = model.get_layer(name='pool5')
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='fc6')
-                layer_utils.convert_dense_weights_data_format(
+                convert_dense_weights_data_format(
                     dense, shape, 'channels_first'
                 )
                 pass
@@ -168,21 +175,22 @@ def resnet_conv_block(input_tensor, kernel_size, filters, stage, block,
     conv1_proj_name = f"conv{stage}_{block}_1x1_proj"
     conv3_name = f"conv{stage}_{block}_3x3"
 
-    x = Conv2D(filters1, (1, 1), strides=strides, use_bias=bias,
-               name=conv1_reduce_name)(input_tensor)
+    x = Conv2D(
+        filters1, (1, 1), strides=strides, use_bias=bias, name=conv1_reduce_name
+    )(input_tensor)
     x = BatchNormalization(axis=bn_axis, name=f"{conv1_reduce_name}/bn")(x)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias,
-               name=conv3_name)(x)
+    x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias, name=conv3_name)(x)
     x = BatchNormalization(axis=bn_axis, name=f"{conv3_name}/bn")(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), name=conv1_increase_name, use_bias=bias)(x)
     x = BatchNormalization(axis=bn_axis, name=f"{conv1_increase_name}/bn")(x)
 
-    shortcut = Conv2D(filters3, (1, 1), strides=strides, use_bias=bias, name=conv1_proj_name)(
-        input_tensor)
+    shortcut = Conv2D(
+        filters3, (1, 1), strides=strides, use_bias=bias, name=conv1_proj_name
+    )(input_tensor)
     shortcut = BatchNormalization(axis=bn_axis, name=f"{conv1_proj_name}/bn")(shortcut)
 
     x = add([x, shortcut])
@@ -244,7 +252,7 @@ def RESNET50(include_top=True, weights='vggface',
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
     if input_tensor is not None:
-        inputs = layer_utils.get_source_inputs(input_tensor)
+        inputs = get_source_inputs(input_tensor)
         pass
     else:
         inputs = img_input
@@ -255,12 +263,12 @@ def RESNET50(include_top=True, weights='vggface',
     # load weights
     if weights == 'vggface':
         if include_top:
-            weights_path = get_file('rcmalli_vggface_tf_resnet50.h5',
+            weights_path = get_file(RESNET50_WEIGHTS_FILE,
                                     RESNET50_WEIGHTS_PATH,
                                     cache_subdir=VGGFACE_DIR)
             pass
         else:
-            weights_path = get_file('rcmalli_vggface_tf_notop_resnet50.h5',
+            weights_path = get_file(RESNET50_WEIGHTS_FILE_NO_TOP,
                                     RESNET50_WEIGHTS_PATH_NO_TOP,
                                     cache_subdir=VGGFACE_DIR)
             pass
@@ -360,23 +368,20 @@ def senet_identity_block(input_tensor, kernel_size,
     else:
         bn_axis = 1
 
-    conv1_reduce_name = 'conv' + str(stage) + "_" + str(block) + "_1x1_reduce"
-    conv1_increase_name = 'conv' + str(stage) + "_" + str(
-        block) + "_1x1_increase"
-    conv3_name = 'conv' + str(stage) + "_" + str(block) + "_3x3"
+    conv1_reduce_name = f"conv{stage}_{block}_1x1_reduce"
+    conv1_increase_name = f"conv{stage}_{block}_1x1_increase"
+    conv3_name = f"conv{stage}_{block}_3x3"
 
-    x = Conv2D(filters1, (1, 1), use_bias=bias,
-               name=conv1_reduce_name)(input_tensor)
-    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn")(x)
+    x = Conv2D(filters1, (1, 1), use_bias=bias, name=conv1_reduce_name)(input_tensor)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_reduce_name}/bn")(x)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias,
-               name=conv3_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn")(x)
+    x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias, name=conv3_name)(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv3_name}/bn")(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), name=conv1_increase_name, use_bias=bias)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn")(x)
+    x = BatchNormalization(axis=bn_axis, name=f"{conv1_increase_name}/bn")(x)
 
     se = senet_se_block(x, stage=stage, block=block, bias=True)
 
@@ -414,8 +419,8 @@ def SENET50(include_top=True, weights='vggface',
         pass
 
     x = Conv2D(
-        64, (7, 7), use_bias=False, strides=(2, 2), padding='same',
-        name='conv1/7x7_s2')(img_input)
+        64, (7, 7), use_bias=False, strides=(2, 2), padding='same', name='conv1/7x7_s2'
+    )(img_input)
     x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn')(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
@@ -436,7 +441,7 @@ def SENET50(include_top=True, weights='vggface',
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
     if input_tensor is not None:
-        inputs = layer_utils.get_source_inputs(input_tensor)
+        inputs = get_source_inputs(input_tensor)
     else:
         inputs = img_input
     # Create model.
@@ -445,11 +450,11 @@ def SENET50(include_top=True, weights='vggface',
     # load weights
     if weights == 'vggface':
         if include_top:
-            weights_path = get_file('rcmalli_vggface_tf_senet50.h5',
+            weights_path = get_file(SENET50_WEIGHTS_FILE,
                                     SENET50_WEIGHTS_PATH,
                                     cache_subdir=VGGFACE_DIR)
         else:
-            weights_path = get_file('rcmalli_vggface_tf_notop_senet50.h5',
+            weights_path = get_file(SENET50_WEIGHTS_FILE_NO_TOP,
                                     SENET50_WEIGHTS_PATH_NO_TOP,
                                     cache_subdir=VGGFACE_DIR)
         model.load_weights(weights_path)
@@ -485,6 +490,97 @@ def conv_block(input_tensor):
     x = _conv_block(x, 256, 3, name_conv='conv3', name_pool='pool3')
     x = _conv_block(x, 512, 3, name_conv='conv4', name_pool='pool4')
     return x
+
+
+def _obtain_input_shape(input_shape,
+                        default_size,
+                        min_size,
+                        data_format,
+                        require_flatten,
+                        weights=None):
+    """Compute/validate a model's input shape.
+
+    # Arguments
+        input_shape: Either None (will return the default network input shape),
+            or a user-provided shape to be validated.
+        default_size: Default input width/height for the model.
+        min_size: Minimum input width/height accepted by the model.
+        data_format: Image data format to use.
+        require_flatten: Whether the model is expected to
+            be linked to a classifier via a Flatten layer.
+        weights: One of `None` (random initialization)
+            or 'imagenet' (pre-training on ImageNet).
+            If weights='imagenet' input channels must be equal to 3.
+
+    # Returns
+        An integer shape tuple (may include None entries).
+
+    # Raises
+        ValueError: In case of invalid argument values.
+    """
+    if weights != 'imagenet' and input_shape and len(input_shape) == 3:
+        if data_format == 'channels_first':
+            if input_shape[0] not in {1, 3}:
+                warnings.warn(
+                    'This model usually expects 1 or 3 input channels. '
+                    'However, it was passed an input_shape with ' +
+                    str(input_shape[0]) + ' input channels.')
+            default_shape = (input_shape[0], default_size, default_size)
+        else:
+            if input_shape[-1] not in {1, 3}:
+                warnings.warn(
+                    'This model usually expects 1 or 3 input channels. '
+                    'However, it was passed an input_shape with ' +
+                    str(input_shape[-1]) + ' input channels.')
+            default_shape = (default_size, default_size, input_shape[-1])
+    else:
+        if data_format == 'channels_first':
+            default_shape = (3, default_size, default_size)
+        else:
+            default_shape = (default_size, default_size, 3)
+    if weights == 'imagenet' and require_flatten:
+        if input_shape is not None:
+            if input_shape != default_shape:
+                raise ValueError(f"When setting `include_top=True` and loading `imagenet` weights, "
+                                 f"`input_shape` should be {default_shape}.")
+        return default_shape
+    if input_shape:
+        if data_format == 'channels_first':
+            if input_shape is not None:
+                if len(input_shape) != 3:
+                    raise ValueError(
+                        '`input_shape` must be a tuple of three integers.')
+                if input_shape[0] != 3 and weights == 'imagenet':
+                    raise ValueError(f"The input must have 3 channels; got "
+                                     f"`input_shape={input_shape}`")
+                if ((input_shape[1] is not None and input_shape[1] < min_size) or
+                   (input_shape[2] is not None and input_shape[2] < min_size)):
+                    raise ValueError(f"Input size must be at least {min_size}x{min_size};"
+                                     f" got `input_shape={input_shape}`")
+        else:
+            if input_shape is not None:
+                if len(input_shape) != 3:
+                    raise ValueError('`input_shape` must be a tuple of three integers.')
+                if input_shape[-1] != 3 and weights == 'imagenet':
+                    raise ValueError(f"The input must have 3 channels; got `input_shape={input_shape}`")
+                if ((input_shape[0] is not None and input_shape[0] < min_size) or
+                   (input_shape[1] is not None and input_shape[1] < min_size)):
+                    raise ValueError(f"Input size must be at least {min_size}x{min_size};"
+                                     f" got `input_shape={input_shape}`")
+    else:
+        if require_flatten:
+            input_shape = default_shape
+        else:
+            if data_format == 'channels_first':
+                input_shape = (3, None, None)
+            else:
+                input_shape = (None, None, 3)
+    if require_flatten:
+        if None in input_shape:
+            raise ValueError(f"If `include_top` is True, "
+                             f"you should specify a static `input_shape`. "
+                             f"Got `input_shape={input_shape}`")
+    return input_shape
 
 
 def _net_blocks(input_, stage: int, blocks: int, filters: list, net: str = 'RES'):
