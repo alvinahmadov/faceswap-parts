@@ -508,14 +508,14 @@ def nms(boxes, threshold, method):
     y2 = boxes[:, 3]
     s = boxes[:, 4]
     area = (x2 - x1 + 1) * (y2 - y1 + 1)
-    i = np.argsort(s)
+    I = np.argsort(s)
     pick = np.zeros_like(s, dtype=np.int16)
     counter = 0
-    while i.size > 0:
-        i = i[-1]
+    while I.size > 0:
+        i = I[-1]
         pick[counter] = i
         counter += 1
-        idx = i[0:-1]
+        idx = I[0:-1]
         xx1 = np.maximum(x1[i], x1[idx])
         yy1 = np.maximum(y1[i], y1[idx])
         xx2 = np.minimum(x2[i], x2[idx])
@@ -527,7 +527,7 @@ def nms(boxes, threshold, method):
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)
-        i = i[np.where(o <= threshold)]
+        I = I[np.where(o <= threshold)]
         pass
     pick = pick[0:counter]
     return pick
