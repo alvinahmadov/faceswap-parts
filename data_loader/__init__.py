@@ -33,16 +33,7 @@ class DataLoader:
             config["use_bm_eyes"]
         )
 
-        self.data_iter_next = self.create_tfdata_iter(
-            self.filenames,
-            self.all_filenames,
-            self.batch_size,
-            self.dir_bm_eyes,
-            self.resolution,
-            self.prob_random_color_match,
-            self.use_da_motion_blur,
-            self.use_bm_eyes,
-        )
+        self.data_iter_next = self.create_tfdata_iter()
 
     def set_data_augm_config(
             self,
@@ -55,59 +46,34 @@ class DataLoader:
         self.use_bm_eyes = use_bm_eyes
         pass
 
-    def create_tfdata_iter(
-            self,
-            filenames,
-            fns_all_trn_data,
-            batch_size,
-            dir_bm_eyes,
-            resolution,
-            prob_random_color_match,
-            use_da_motion_blur,
-            use_bm_eyes
-    ):
-        def map_func(fnames):
-            return tf.py_function(
-                func=read_image,
-                inp=[
-                    fnames,
-                    fns_all_trn_data,
-                    dir_bm_eyes,
-                    resolution,
-                    prob_random_color_match,
-                    use_da_motion_blur,
-                    use_bm_eyes
-                ],
-                Tout=[tf.float32, tf.float32, tf.float32]
-            ) if tf.executing_eagerly else read_image(
-                fnames,
-                fns_all_trn_data,
-                dir_bm_eyes,
-                resolution,
-                prob_random_color_match,
-                use_da_motion_blur,
-                use_bm_eyes
-            )
-
-        def map_and_batch(dataset_: tf.data.Dataset):
-            return dataset_.map(
-                map_func, num_parallel_calls=self.num_cpus if tf.executing_eagerly else None
-            ).batch(
-                batch_size=batch_size,
-                num_parallel_calls=self.num_cpus if tf.executing_eagerly else None,
+    def create_tfdata_iter(self):
+        tf_fns = tf.constant(self.filenames, dtype=tf.string)  # use tf_fns=filenames is also fine
+        dataset = tf.data.Dataset.from_tensor_slices(tf_fns)
+        dataset = dataset.shuffle(len(self.filenames))
+        dataset = dataset.apply(
+            tf.contrib.data.map_and_batch(
+                lambda filenames: tf.py_func(
+                    func=read_image,
+                    inp=[filenames,
+                         self.all_filenames,
+                         self.dir_bm_eyes,
+                         self.resolution,
+                         self.prob_random_color_match,
+                         self.use_da_motion_blur,
+                         self.use_bm_eyes],
+                    Tout=[tf.float32, tf.float32, tf.float32]
+                ),
+                batch_size=self.batch_size,
+                num_parallel_batches=self.num_cpus,  # cpu cores
                 drop_remainder=True
             )
-
-        tf_fns = tf.constant(filenames, dtype=tf.string)  # use tf_fns=filenames is also fine
-        dataset = tf.data.Dataset.from_tensor_slices(tf_fns)
-        dataset = dataset.shuffle(len(filenames))
-
-        dataset = dataset.apply(map_and_batch)
+        )
         dataset = dataset.repeat()
         dataset = dataset.prefetch(32)
 
-        iterator = iter(dataset)
-        return next(iterator)
+        iterator = dataset.make_one_shot_iterator()
+        next_element = iterator.get_next()  # this tensor can also be useed as Input(tensor=next_element)
+        return next_element
 
     def get_next_batch(self):
         return self.session.run(self.data_iter_next)
