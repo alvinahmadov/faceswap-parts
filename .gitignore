@@ -90,4 +90,4 @@ pip-selfcheck.json
 
 tests/face_src/
 tests/face_dst/
-dummy.mp4
+tests/dummy.mp4
