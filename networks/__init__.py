@@ -1,5 +1,5 @@
 from .custom_inits.icnr_initializer import icnr_keras
-from .custom_layers.scale_layer import Scale
+from .layers.scale_layer import Scale
 from .faceswap_model import FaceswapModel
 from .group_normalization import GroupNormalization
 from .instance_normalization import InstanceNormalization
