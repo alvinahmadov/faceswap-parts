@@ -1,8 +1,7 @@
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras import initializers, regularizers, constraints
-from tensorflow.python.keras.utils.generic_utils import get_custom_objects
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.engine.input_spec import InputSpec
+from keras import backend as K
+from keras import initializers, regularizers, constraints
+from keras.engine import Layer, InputSpec
+from keras.utils.generic_utils import get_custom_objects
 
 
 class InstanceNormalization(Layer):
@@ -130,7 +129,7 @@ class InstanceNormalization(Layer):
         self.built = True
         pass
 
-    def call(self, inputs, training=None):
+    def call(self, inputs, training=None, *args, **kwargs):
         input_shape = K.int_shape(inputs)
         reduction_axes = list(range(0, len(input_shape)))
 
@@ -155,6 +154,7 @@ class InstanceNormalization(Layer):
             normed = normed + broadcast_beta
         return normed
 
+    # noinspection PyTypeChecker
     def get_config(self):
         config = {
             'axis': self.axis,
