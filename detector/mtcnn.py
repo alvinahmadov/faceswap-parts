@@ -81,6 +81,7 @@ class Network:
         """Construct the network. """
         raise NotImplementedError('Must be implemented by the subclass.')
 
+    # noinspection PyUnresolvedReferences, PyTypeChecker
     @staticmethod
     def load(data_path, session, ignore_missing=False):
         """
@@ -97,12 +98,11 @@ class Network:
         """
         data_dict = np.load(data_path, encoding='latin1', allow_pickle=True).item()  # pylint: disable=no-member
 
-        # noinspection PyTypeChecker
         for op_name in data_dict:
-            with tf.compat.v1.variable_scope(op_name, reuse=True):
+            with tf.variable_scope(op_name, reuse=True):
                 for param_name, data in iteritems(data_dict[op_name]):
                     try:
-                        var = tf.compat.v1.get_variable(param_name)
+                        var = tf.get_variable(param_name)
                         session.run(var.assign(data))
                         pass
                     except ValueError:
@@ -143,7 +143,7 @@ class Network:
 
     def make_var(self, name, shape):
         """Creates a new TensorFlow variable."""
-        return tf.compat.v1.get_variable(name, shape, trainable=self.trainable)
+        return tf.get_variable(name, shape, trainable=self.trainable)
 
     @layer
     def conv(self, inp, k_h, k_w, c_o, s_h, s_w, name, relu=True, padding='SAME', group=1, biased=True):
@@ -160,7 +160,7 @@ class Network:
         assert c_o % group == 0
         # Convolution for a given input and kernel
 
-        with tf.compat.v1.variable_scope(name) as scope:
+        with tf.variable_scope(name) as scope:
             kernel = self.make_var('weights', shape=[k_h, k_w, c_i // group, c_o])
             # This is the common-case.
             # Convolve the input without any further complications.
@@ -177,7 +177,7 @@ class Network:
 
     @layer
     def prelu(self, inp, name):
-        with tf.compat.v1.variable_scope(name):
+        with tf.variable_scope(name):
             i = int(inp.get_shape()[-1])
             alpha = self.make_var('alpha', shape=(i,))
             output = tf.nn.relu(inp) + tf.multiply(alpha, -tf.nn.relu(-inp))
@@ -195,7 +195,7 @@ class Network:
 
     @layer
     def fc(self, inp, num_out, name, relu=True):
-        with tf.compat.v1.variable_scope(name):
+        with tf.variable_scope(name):
             input_shape = inp.get_shape()
             if input_shape.ndims == 4:
                 # The input is spatial. Vectorize it first.
@@ -209,7 +209,7 @@ class Network:
                 pass
             weights = self.make_var('weights', shape=[dim, num_out])
             biases = self.make_var('biases', [num_out])
-            op = tf.compat.v1.nn.relu_layer if relu else tf.compat.v1.nn.xw_plus_b
+            op = tf.nn.relu_layer if relu else tf.nn.xw_plus_b
             fc = op(feed_in, weights, biases, name=name)
             return fc
 
@@ -225,7 +225,7 @@ class Network:
         max_axis = tf.reduce_max(target, axis, keepdims=True)
         target_exp = tf.exp(target - max_axis)
         normalize = tf.reduce_sum(target_exp, axis, keepdims=True)
-        softmax = tf.math.divide(target_exp, normalize, name)
+        softmax = tf.div(target_exp, normalize, name)
         return softmax
 
 
@@ -508,14 +508,14 @@ def nms(boxes, threshold, method):
     y2 = boxes[:, 3]
     s = boxes[:, 4]
     area = (x2 - x1 + 1) * (y2 - y1 + 1)
-    I = np.argsort(s)
+    i = np.argsort(s)
     pick = np.zeros_like(s, dtype=np.int16)
     counter = 0
-    while I.size > 0:
-        i = I[-1]
+    while i.size > 0:
+        i = i[-1]
         pick[counter] = i
         counter += 1
-        idx = I[0:-1]
+        idx = i[0:-1]
         xx1 = np.maximum(x1[i], x1[idx])
         yy1 = np.maximum(y1[i], y1[idx])
         xx2 = np.minimum(x2[i], x2[idx])
@@ -527,7 +527,7 @@ def nms(boxes, threshold, method):
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)
-        I = I[np.where(o <= threshold)]
+        i = i[np.where(o <= threshold)]
         pass
     pick = pick[0:counter]
     return pick
