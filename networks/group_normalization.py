@@ -1,8 +1,13 @@
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras import initializers, regularizers
+from keras import backend as K
+from keras import initializers, regularizers
+from keras.engine import Layer, InputSpec
 
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.engine.input_spec import InputSpec
+try:
+    from keras.utils.conv_utils import normalize_data_format
+except:
+    from keras.backend.common import normalize_data_format
+
+    pass
 
 
 def to_list(x):
@@ -20,6 +25,7 @@ class GroupNormalization(Layer):
             gamma_regularizer=None, beta_regularizer=None,
             epsilon=1e-6,
             group=32,
+            data_format=None,
             **kwargs
     ):
         super(GroupNormalization, self).__init__(**kwargs)
@@ -33,8 +39,8 @@ class GroupNormalization(Layer):
         self.beta_regularizer = regularizers.get(beta_regularizer)
         self.epsilon = epsilon
         self.group = group
+        self.data_format = normalize_data_format(data_format)
         self.supports_masking = True
-
         pass
 
     @property
@@ -64,7 +70,6 @@ class GroupNormalization(Layer):
         elif self.data_format == 'channels_first':
             channel_axis = 1
             shape[channel_axis] = input_shape[channel_axis]
-            pass
         # for i in self.axis:
         #    shape[i] = input_shape[i]
         self.gamma = self.add_weight(
@@ -86,8 +91,7 @@ class GroupNormalization(Layer):
         input_shape = K.int_shape(inputs)
         if len(input_shape) != 4 and len(input_shape) != 2:
             raise ValueError(
-                f"Inputs should have rank 4 or 2;"
-                f"\nReceived input shape: {input_shape}.\n"
+                f"Inputs should have rank 4 or 2;Received input shape: {input_shape}.\n"
             )
 
         if len(input_shape) == 4:
@@ -145,6 +149,7 @@ class GroupNormalization(Layer):
 
             return self.gamma * x + self.beta
 
+    # noinspection PyTypeChecker
     def get_config(self):
         config = {
             'epsilon': self.epsilon,

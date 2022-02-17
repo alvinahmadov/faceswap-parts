@@ -1,7 +1,6 @@
-import tensorflow.python.keras.backend as K
-from tensorflow.python.keras import initializers
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.engine.input_spec import InputSpec
+import keras.backend as K
+from keras import initializers
+from keras.layers import Layer, InputSpec
 
 
 class Scale(Layer):
@@ -41,6 +40,7 @@ class Scale(Layer):
         self.gamma_init = initializers.get(gamma_init)
         self.initial_weights = weights
         super(Scale, self).__init__(**kwargs)
+        pass
 
     def build(self, input_shape):
         self.input_spec = [InputSpec(shape=input_shape)]
@@ -57,6 +57,7 @@ class Scale(Layer):
     def call(self, x, mask=None, **kwargs):
         return self.gamma * x
 
+    # noinspection PyTypeChecker
     def get_config(self):
         config = {"axis": self.axis}
         base_config = super(Scale, self).get_config()

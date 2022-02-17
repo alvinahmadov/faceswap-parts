@@ -3,8 +3,7 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.layers import Input
+from keras import backend as K
 
 from detector import mtcnn
 
@@ -85,10 +84,10 @@ class MTCNNFaceDetector:
             h = int(x1 - x0)
             length = (w + h) / 2
             center = (int((x1 + x0) / 2), int((y1 + y0) / 2))
-            new_x0 = np.max([0, (center[0] - length // 2)]).astype(np.int32)
-            new_x1 = np.min([im_shape[0], (center[0] + length // 2)]).astype(np.int32)
-            new_y0 = np.max([0, (center[1] - length // 2)]).astype(np.int32)
-            new_y1 = np.min([im_shape[1], (center[1] + length // 2)]).astype(np.int32)
+            new_x0 = np.max([0, (center[0] - length // 2)])
+            new_x1 = np.min([im_shape[0], (center[0] + length // 2)])
+            new_y0 = np.max([0, (center[1] - length // 2)])
+            new_y1 = np.min([im_shape[1], (center[1] + length // 2)])
             bboxes[i, 0:4] = new_x0, new_y1, new_x1, new_y0
             pass
         return bboxes
@@ -96,11 +95,8 @@ class MTCNNFaceDetector:
     @staticmethod
     def calibrate_coord(faces, scale_factor):
         for i, (x0, y1, x1, y0, _) in enumerate(faces):
-            faces[i] = (
-                x0 * scale_factor, y1 * scale_factor,
-                x1 * scale_factor, y0 * scale_factor,
-                _
-            )
+            faces[i] = (x0 * scale_factor, y1 * scale_factor,
+                        x1 * scale_factor, y0 * scale_factor, _)
             pass
         return faces
 
@@ -171,18 +167,18 @@ class MTCNNFaceDetector:
             model_path, _ = os.path.split(os.path.realpath(__file__))
             pass
 
-        with tf.compat.v1.variable_scope('pnet'):
-            data = Input((None, None, None, 3), dtype=tf.float32, name='input')
+        with tf.variable_scope('pnet'):
+            data = tf.placeholder(shape=(None, None, None, 3), dtype=tf.float32, name='input')
             pnet = mtcnn.PNet({'data': data})
             pnet.load(os.path.join(model_path, 'det1.npy'), sess)
             pass
-        with tf.compat.v1.variable_scope('rnet'):
-            data = Input((None, 24, 24, 3), dtype=tf.float32, name='input')
+        with tf.variable_scope('rnet'):
+            data = tf.placeholder(shape=(None, 24, 24, 3), dtype=tf.float32, name='input')
             rnet = mtcnn.RNet({'data': data})
             rnet.load(os.path.join(model_path, 'det2.npy'), sess)
             pass
-        with tf.compat.v1.variable_scope('onet'):
-            data = Input((None, 48, 48, 3), dtype=tf.float32, name='input')
+        with tf.variable_scope('onet'):
+            data = tf.placeholder(shape=(None, 48, 48, 3), dtype=tf.float32, name='input')
             onet = mtcnn.ONet({'data': data})
             onet.load(os.path.join(model_path, 'det3.npy'), sess)
             pass
@@ -199,6 +195,7 @@ class MTCNNFaceDetector:
             [onet.layers['data'], ],
             [onet.layers['conv6-2'], onet.layers['conv6-3'], onet.layers['prob1']]
         )
+        pass
 
     def _auto_downscale(self, image):
         if self.is_higher_than_1080p(image):

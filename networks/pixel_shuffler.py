@@ -2,9 +2,9 @@
 # by t-ae
 # https://gist.github.com/t-ae/6e1016cc188104d123676ccef3264981
 
-import tensorflow.python.keras.backend as K
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.utils import conv_utils
+from keras.utils import conv_utils
+from keras.engine.topology import Layer
+import keras.backend as K
 
 
 class PixelShuffler(Layer):
@@ -65,6 +65,7 @@ class PixelShuffler(Layer):
             return input_shape[0], height, width, channels
         pass
 
+    # noinspection PyTypeChecker
     def get_config(self):
         config = {'size': self.size, 'data_format': self.data_format}
         base_config = super(PixelShuffler, self).get_config()

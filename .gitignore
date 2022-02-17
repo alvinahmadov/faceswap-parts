@@ -85,6 +85,9 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 
-/face_src/
-/face_dst/
-dummy.mp4
+*.h5
+*.hdf
+
+tests/face_src/
+tests/face_dst/
+tests/dummy.mp4

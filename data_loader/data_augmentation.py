@@ -194,8 +194,7 @@ def read_image(
     if np.random.uniform() < 0.25 and use_da_motion_blur:
         warped_img, target_img = motion_blur([warped_img, target_img])
 
-    return (
-        warped_img.astype(np.float32),
-        target_img.astype(np.float32),
-        bm_eyes.astype(np.float32)
-    )
+    warped_img, target_img, bm_eyes = \
+        warped_img.astype(np.float32), target_img.astype(np.float32), bm_eyes.astype(np.float32)
+
+    return warped_img, target_img, bm_eyes
