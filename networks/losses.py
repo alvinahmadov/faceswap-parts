@@ -88,7 +88,7 @@ def reconstruction_loss(real, fake_abgr, mask_eyes, model_outputs, **weights):
 
     for out in model_outputs[:-1]:
         out_size = out.get_shape().as_list()
-        resized_real = tf.compat.v1.image.resize_images(real, out_size[1:3])
+        resized_real = tf.image.resize_images(real, out_size[1:3])
         loss_gen += weights['w_recon'] * calc_loss(out, resized_real, "l1")
         pass
     return loss_gen
