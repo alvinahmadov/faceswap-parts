@@ -88,6 +88,6 @@ pip-selfcheck.json
 *.h5
 *.hdf
 
-/face_src/
-/face_dst/
+tests/face_src/
+tests/face_dst/
 dummy.mp4
