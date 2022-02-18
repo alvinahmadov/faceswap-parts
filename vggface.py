@@ -54,8 +54,7 @@ VGGFACE_DIR = 'models/vggface'
 
 def vgg16(include_top=True, weights='vggface',
           input_tensor=None, input_shape=None,
-          pooling=None,
-          classes=2622):
+          pooling=None, classes=2622, model_dir=VGGFACE_DIR):
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=224,
                                       min_size=48,
@@ -101,11 +100,11 @@ def vgg16(include_top=True, weights='vggface',
         if include_top:
             weights_path = get_file('rcmalli_vggface_tf_vgg16.h5',
                                     VGG16_WEIGHTS_PATH,
-                                    cache_subdir=VGGFACE_DIR)
+                                    cache_subdir=model_dir)
         else:
             weights_path = get_file('rcmalli_vggface_tf_notop_vgg16.h5',
                                     VGG16_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=VGGFACE_DIR)
+                                    cache_subdir=model_dir)
         model.load_weights(weights_path, by_name=True)
 
         if K.image_data_format() == 'channels_first':
@@ -201,8 +200,8 @@ def resnet_conv_block(input_tensor, kernel_size, filters, stage, block,
 # noinspection PyPep8Naming
 def RESNET50(include_top=True, weights='vggface',
              input_tensor=None, input_shape=None,
-             pooling=None,
-             classes=8631):
+             pooling=None, classes=8631,
+             model_dir=VGGFACE_DIR, by_name=True):
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=224,
                                       min_size=197,
@@ -265,14 +264,14 @@ def RESNET50(include_top=True, weights='vggface',
         if include_top:
             weights_path = get_file(RESNET50_WEIGHTS_FILE,
                                     RESNET50_WEIGHTS_PATH,
-                                    cache_subdir=VGGFACE_DIR)
+                                    cache_subdir=model_dir)
             pass
         else:
             weights_path = get_file(RESNET50_WEIGHTS_FILE_NO_TOP,
                                     RESNET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=VGGFACE_DIR)
+                                    cache_subdir=model_dir)
             pass
-        model.load_weights(weights_path)
+        model.load_weights(weights_path, by_name=by_name)
 
         if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
             warnings.warn('You are using the TensorFlow backend, yet you '
@@ -554,7 +553,7 @@ def _obtain_input_shape(input_shape,
                     raise ValueError(f"The input must have 3 channels; got "
                                      f"`input_shape={input_shape}`")
                 if ((input_shape[1] is not None and input_shape[1] < min_size) or
-                   (input_shape[2] is not None and input_shape[2] < min_size)):
+                        (input_shape[2] is not None and input_shape[2] < min_size)):
                     raise ValueError(f"Input size must be at least {min_size}x{min_size};"
                                      f" got `input_shape={input_shape}`")
         else:
@@ -564,7 +563,7 @@ def _obtain_input_shape(input_shape,
                 if input_shape[-1] != 3 and weights == 'imagenet':
                     raise ValueError(f"The input must have 3 channels; got `input_shape={input_shape}`")
                 if ((input_shape[0] is not None and input_shape[0] < min_size) or
-                   (input_shape[1] is not None and input_shape[1] < min_size)):
+                        (input_shape[1] is not None and input_shape[1] < min_size)):
                     raise ValueError(f"Input size must be at least {min_size}x{min_size};"
                                      f" got `input_shape={input_shape}`")
     else:
