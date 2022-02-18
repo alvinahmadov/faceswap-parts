@@ -1,10 +1,74 @@
 import os
+import time
 
 import cv2
 import numpy as np
 import yaml
 from IPython.display import display
 from PIL import Image
+
+
+class CheckPoint:
+    def __init__(self, filename):
+        self._time = 0.0
+        self._iter = 0
+        self.filename: str = filename
+        self.load()
+        pass
+
+    def __repr__(self):
+        return f"Checkpoint([iter={self.iter}\ntime={time.time() - self.time}])"
+        pass
+
+    def __str__(self):
+        return self.__repr__()
+
+    @property
+    def time(self):
+        return self._time
+
+    @property
+    def iter(self):
+        return self._iter
+
+    def load(self):
+        try:
+            checkpoint = self._read_checkpoints()
+            pass
+        except:
+            checkpoint = {'iter': 0, 'time': time.time()}
+            pass
+
+        self._iter = int(checkpoint['iter'] if 'iter' in checkpoint else self.iter)
+        self._time = float(checkpoint['time'] if 'time' in checkpoint else self.time)
+        return self
+
+    def save(self, gen_iter=0, time=0.0):
+        self._iter = gen_iter if gen_iter > 0 else self.iter
+        self._time = time if time > 0.0 and not self.iter == 0 else self.time
+        self._write_checkpoints()
+        return self
+
+    def _write_checkpoints(self):
+        with open(self.filename, 'w') as f:
+            f.write(f"iter={self.iter}\ntime={self.time}")
+            pass
+        pass
+
+    def _read_checkpoints(self):
+        if not os.path.exists(self.filename):
+            raise IOError(f"Checkpoint file `{self.filename}` doesn't exist")
+
+        checkpoint = {}
+        with open(self.filename, 'r') as f:
+            for line in f:
+                name, var = line.partition("=")[::2]
+                checkpoint[name.strip()] = float(var)
+                pass
+            pass
+        return checkpoint
+
+    pass
 
 
 def get_image_paths(directory):
