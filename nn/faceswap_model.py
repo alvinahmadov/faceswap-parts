@@ -4,11 +4,11 @@ from keras.layers import Conv2D, Dense, Flatten, Lambda, Reshape, concatenate
 from keras.models import Model
 from keras.optimizers import Adam
 
-from networks.losses import (
+from nn.losses import (
     first_order, cyclic_loss, adversarial_loss,
     reconstruction_loss, edge_loss, perceptual_loss
 )
-from networks.nn_blocks import (
+from nn.blocks import (
     upscale_nn, upscale_ps, conv_block,
     conv_block_d, sagan_block, res_block
 )

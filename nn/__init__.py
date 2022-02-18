@@ -8,4 +8,4 @@ from .losses import (
     adversarial_loss, reconstruction_loss,
     edge_loss, perceptual_loss
 )
-from .nn_blocks import *
+from .blocks import *
