@@ -398,10 +398,10 @@ class FaceswapModel:
             self.decoder_dst.load_weights(f"{path}/decoder_B.h5")
             self.net_disc_src.load_weights(f"{path}/netDA.h5")
             self.net_disc_dst.load_weights(f"{path}/netDB.h5")
-            print("Model weights files are successfully loaded.")
+            print("Файлы весов модели успешно загружены.")
             pass
         except:
-            print("Error occurred during loading weights files.")
+            print("Произошла ошибка во время загрузки весов.")
             pass
         pass
 
@@ -412,10 +412,10 @@ class FaceswapModel:
             self.decoder_dst.save_weights(f"{path}/decoder_B.h5")
             self.net_disc_src.save_weights(f"{path}/netDA.h5")
             self.net_disc_dst.save_weights(f"{path}/netDB.h5")
-            print(f"Model weights files have been saved to {path}.")
+            print(f"Файлы весов модели были успешно сохранены в `{path}`.")
             pass
         except:
-            print("Error occurred during saving weights.")
+            print("Произошла ошибка во время сохранения весов.")
             pass
         pass
 
