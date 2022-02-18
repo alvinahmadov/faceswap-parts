@@ -4,7 +4,7 @@ import keras.backend as K
 from IPython.display import clear_output
 
 from nn.faceswap_model import FaceswapModel
-from vggface import RESNET50
+from nn.vggface import RESNET50
 
 # Input/Output resolution
 RESOLUTION = 64  # 64x64, 128x128, 256x256
