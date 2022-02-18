@@ -30,13 +30,17 @@ GA: 0.2616 GB: 0.2521
 ----------
 ```
 
+
 **Преобразованные (замаскированные) результаты:**
+
 ![Preprocessed for 1500 iterations](images/train_preprocessed_1500.png)
 
 **Маски:**
+
 ![Masked for 1500 iterations](images/train_masked_1500.png)
 
 **Результаты реконструкции:**
+
 ![Masked for 1500 iterations](images/train_reconstruction_1500.png)
 ---
 
@@ -66,12 +70,15 @@ GA: 0.3626 GB: 0.4052
 ```
 
 **Преобразованные (замаскированные) результаты:**
+
 ![Preprocessed for 2400 iterations](images/train_preprocessed_2400.png)
 
 **Маски:**
+
 ![Masked for 2400 iterations](images/train_masked_2400.png)
 
 **Результаты реконструкции:**
+
 ![Masked for 2400 iterations](images/train_reconstruction_2400.png)
 ---
 
@@ -100,12 +107,15 @@ GA: 0.2787 GB: 0.3814
 ```
 
 **Преобразованные (замаскированные) результаты:**
+
 ![Preprocessed for 2700 iterations](images/train_preprocessed_2700.png)
 
 **Маски:**
+
 ![Masked for 2700 iterations](images/train_masked_2700.png)
 
 **Результаты реконструкции:**
+
 ![Masked for 2700 iterations](images/train_reconstruction_2700.png)
 ---
 
@@ -135,12 +145,15 @@ GA: 0.2673 GB: 0.3436
 ```
 
 **Преобразованные (замаскированные) результаты:**
+
 ![Preprocessed for 3000 iterations](images/train_preprocessed_3000.png)
 
 **Маски:**
+
 ![Masked for 3000 iterations](images/train_masked_3000.png)
 
 **Результаты реконструкции:**
+
 ![Masked for 3000 iterations](images/train_reconstruction_3000.png)
 ---
 
@@ -170,11 +183,14 @@ GA: 0.2352 GB: 0.2741
 ```
 
 **Преобразованные (замаскированные) результаты:**
+
 ![Preprocessed for 3600 iterations](images/train_preprocessed_3600.png)
 
 **Маски:**
+
 ![Masked for 3600 iterations](images/train_masked_3600.png)
 
 **Результаты реконструкции:**
+
 ![Masked for 3600 iterations](images/train_reconstruction_3600.png)
 ---
