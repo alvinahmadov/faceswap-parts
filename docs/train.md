@@ -311,3 +311,41 @@ GA: 0.2158 GB: 0.2298
 
 ![Masked for 6300 iterations](images/train_reconstruction_6300.png)
 ---
+
+### Результаты при `TOTAL_ITERS == 6600`
+
+```
+gan_training = mixup_LSGAN
+use_PL = True
+PL_before_activ = True
+use_mask_hinge_loss = False
+m_mask = 0.0
+lr_factor = 0.1
+use_cyclic_loss = False
+----------
+[iter 6600] Loss_DA: 0.448383 Loss_DB: 0.442061 Loss_GA: 1.765384 Loss_GB: 1.673413 time: 451.966603
+----------
+Детали потерь генератора:
+[Adversarial loss]
+GA: 0.0595 GB: 0.0768
+[Reconstruction loss]
+GA: 0.7105 GB: 0.6110
+[Edge loss]
+GA: 0.5133 GB: 0.4839
+[Perceptual loss]
+GA: 0.2115 GB: 0.2313
+----------
+```
+
+**Преобразованные (замаскированные) результаты:**
+
+![Preprocessed for 6600 iterations](images/train_preprocessed_6600.png)
+
+**Маски:**
+
+![Masked for 6600 iterations](images/train_masked_6600.png)
+
+**Результаты реконструкции:**
+
+![Masked for 6600 iterations](images/train_reconstruction_6600.png)
+---
