@@ -3,7 +3,7 @@ import os
 import keras.backend as K
 from IPython.display import clear_output
 
-from networks.faceswap_model import FaceswapModel
+from nn.faceswap_model import FaceswapModel
 from vggface import RESNET50
 
 # Input/Output resolution
