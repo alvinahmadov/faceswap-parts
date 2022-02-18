@@ -4,7 +4,7 @@
 сгенерировать ложные данные на основе множества реальных данных, а вторая доказать, что сгенерированные 
 данные ложные. Таким образом эти сети обучают друг друга до определенной оптимальной точки равновесия.
 
-Ниже представлены результаты обучения моделей для этапов `TOTAL_ITERS == 1500`, `TOTAL_ITERS == 1800` итераций при использовании GPU.  
+Ниже представлены результаты обучения моделей для различных этапов итераций при использовании GPU.  
 
 ### Результаты при `TOTAL_ITERS == 1500`
 ```
@@ -38,74 +38,7 @@ GA: 0.2616 GB: 0.2521
 
 **Результаты реконструкции**:
 ![Masked for 1500 iterations](../doc/images/train_reconstruction_1500.png)
-
-### Результаты при `TOTAL_ITERS == 1800`
-
-```
-gan_training = mixup_LSGAN
-use_PL = True
-PL_before_activ = True
-use_mask_hinge_loss = False
-m_mask = 0.0
-lr_factor = 0.1
-use_cyclic_loss = False
-----------
-[iter 1800] Loss_DA: 0.490654 Loss_DB: 0.492488 Loss_GA: 1.937289 Loss_GB: 1.748453 time: 1107.671602
-----------
-Детали потерь генератора:
-[Adversarial loss]
-GA: 0.0620 GB: 0.0704
-[Reconstruction loss]
-GA: 0.8007 GB: 0.6668
-[Edge loss]
-GA: 0.5323 GB: 0.4849
-[Perceptual loss]
-GA: 0.2487 GB: 0.2325
-----------
-```
-
-**Преобразованные (замаскированные) результаты:**
-![Preprocessed for 1800 iterations](../doc/images/train_preprocessed_1800.png)
-
-**Маски**:
-![Masked for 1800 iterations](../doc/images/train_masked_1800.png)
-
-**Результаты реконструкции**:
-![Masked for 1800 iterations](../doc/images/train_reconstruction_1800.png)
-
-### Результаты при `TOTAL_ITERS == 2100`
-
-```
-gan_training = mixup_LSGAN
-use_PL = True
-PL_before_activ = True
-use_mask_hinge_loss = True
-m_mask = 0.1
-lr_factor = 0.3
-use_cyclic_loss = False
-----------
-[iter 2100] Loss_DA: 0.800108 Loss_DB: 0.784708 Loss_GA: 5.930639 Loss_GB: 5.258344 time: 551.084445
-----------
-Детали потерь генератора:
-[Adversarial loss]
-GA: 0.1383 GB: 0.1570
-[Reconstruction loss]
-GA: 4.5202 GB: 3.8734
-[Edge loss]
-GA: 0.7544 GB: 0.7011
-[Perceptual loss]
-GA: 0.1153 GB: 0.1208
-----------
-```
-
-**Преобразованные (замаскированные) результаты:**
-![Preprocessed for 2100 iterations](../doc/images/train_preprocessed_2100.png)
-
-**Маски**:
-![Masked for 2100 iterations](../doc/images/train_masked_2100.png)
-
-**Результаты реконструкции**:
-![Masked for 2100 iterations](../doc/images/train_reconstruction_2100.png)
+---
 
 ### Результаты при `TOTAL_ITERS == 2400`
 
@@ -140,8 +73,7 @@ GA: 0.3626 GB: 0.4052
 
 **Результаты реконструкции**:
 ![Masked for 2400 iterations](../doc/images/train_reconstruction_2400.png)
-
-
+---
 
 ### Результаты при `TOTAL_ITERS == 2700`
 
@@ -175,8 +107,7 @@ GA: 0.2787 GB: 0.3814
 
 **Результаты реконструкции**:
 ![Masked for 2700 iterations](../doc/images/train_reconstruction_2700.png)
-
-
+---
 
 ### Результаты при `TOTAL_ITERS == 3000`
 
@@ -211,4 +142,39 @@ GA: 0.2673 GB: 0.3436
 
 **Результаты реконструкции**:
 ![Masked for 3000 iterations](../doc/images/train_reconstruction_3000.png)
+---
 
+### Результаты при `TOTAL_ITERS == 3600`
+
+```
+gan_training = mixup_LSGAN
+use_PL = True
+PL_before_activ = True
+use_mask_hinge_loss = False
+m_mask = 0.0
+lr_factor = 0.1
+use_cyclic_loss = False
+----------
+[iter 3600] Loss_DA: 0.483967 Loss_DB: 0.481389 Loss_GA: 1.977065 Loss_GB: 1.904427 time: 1436.592861
+----------
+Детали потерь генератора:
+[Adversarial loss]
+GA: 0.0680 GB: 0.0577
+[Reconstruction loss]
+GA: 0.8415 GB: 0.7528
+[Edge loss]
+GA: 0.5222 GB: 0.5095
+[Perceptual loss]
+GA: 0.2352 GB: 0.2741
+----------
+```
+
+**Преобразованные (замаскированные) результаты:**
+![Preprocessed for 3600 iterations](../doc/images/train_preprocessed_3600.png)
+
+**Маски**:
+![Masked for 3600 iterations](../doc/images/train_masked_3600.png)
+
+**Результаты реконструкции**:
+![Masked for 3600 iterations](../doc/images/train_reconstruction_3600.png)
+---
