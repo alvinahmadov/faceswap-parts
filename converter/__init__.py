@@ -1,6 +1,7 @@
 import numpy as np
 from moviepy.editor import VideoFileClip
 
+from .options import Options as VCOptions, ImageOutputType
 from .face_transformer import FaceTransformer
 from .kalman_filter import KalmanFilter
 from .landmarks_alignment import (
@@ -17,7 +18,7 @@ from .utils import (
 KALMAN_FILTER_LOOP = 200
 
 
-class VideoConverter(object):
+class VideoConverter:
     """
     Attributes:
         _face_transformer: FaceTransformer instance
@@ -57,7 +58,7 @@ class VideoConverter(object):
         self._face_detector = fd
         pass
 
-    def convert(self, input_fn, output_fn, options, duration=None):
+    def convert(self, input_fn, output_fn, options: VCOptions, duration=None):
         """
         Parameters
         ----------
@@ -65,7 +66,7 @@ class VideoConverter(object):
          Input file name
         output_fn : str
          Output file name
-        options : dict
+        options : VCOptions
          Options
         duration : None or tuple[int, int]
          Duration of video if specified
@@ -74,11 +75,9 @@ class VideoConverter(object):
         -------
 
         """
-
-        self._check_options(options)
-
-        if options['use_kalman_filter']:
-            self._init_kalman_filters(options["kf_noise_coef"])
+        
+        if options.use_kalman_filter:
+            self._init_kalman_filters(options.kf_noise_coef)
 
         self._frames = 0
         self.prev_x0 = self.prev_x1 = self.prev_y0 = self.prev_y1 = 0
@@ -99,7 +98,7 @@ class VideoConverter(object):
             pass
         pass
 
-    def process_video(self, input_img, options):
+    def process_video(self, input_img, options: VCOptions):
         """
         Transform detected faces in single input frame.
 
@@ -108,7 +107,7 @@ class VideoConverter(object):
         input_img : ndarray
          Input image from video frame
 
-        options : dict
+        options : VCOptions
          Options for processing
         """
         image = input_img
@@ -116,10 +115,10 @@ class VideoConverter(object):
         # detect face using MTCNN (faces: face bbox coord, pnts: landmarks coord.)
         faces, pnts = self.face_detector.detect_face(
             image, minsize=20,
-            threshold=options["detec_threshold"],
+            threshold=options.detection_threshold,
             factor=0.709,
-            use_auto_downscaling=options["use_auto_downscaling"],
-            min_face_area=options["min_face_area"]
+            use_auto_downscaling=options.use_auto_downscaling,
+            min_face_area=options.min_face_area
         )
 
         mask_map = get_init_mask_map(image)
@@ -139,13 +138,13 @@ class VideoConverter(object):
         for i, (x0, y1, x1, y0, conf_score) in enumerate(faces):
             lms = pnts[:, i:i + 1]
             # smoothe the bounding box
-            if options["use_smoothed_bbox"]:
+            if options.use_smoothed_bbox:
                 if self._frames != 0 and conf_score >= best_conf_score:
                     x0, x1, y0, y1 = self._get_smoothed_coord(
                         x0, x1, y0, y1,
                         img_shape=image.shape,
-                        use_kalman_filter=options["use_kalman_filter"],
-                        ratio=options["bbox_moving_avg_coef"],
+                        use_kalman_filter=options.use_kalman_filter,
+                        ratio=options.bbox_moving_avg_coef,
                     )
                     self._set_prev_coord(x0, x1, y0, y1)
                     best_conf_score = conf_score
@@ -157,7 +156,7 @@ class VideoConverter(object):
                     if conf_score >= best_conf_score:
                         self._set_prev_coord(x0, x1, y0, y1)
                         best_conf_score = conf_score
-                    if options["use_kalman_filter"]:
+                    if options.use_kalman_filter:
                         for j in range(KALMAN_FILTER_LOOP):
                             self._kalman_filter0.predict()
                             self._kalman_filter1.predict()
@@ -180,10 +179,10 @@ class VideoConverter(object):
                 # face transform
                 r_im, r_rgb, r_a = self._face_transformer.transform(
                     aligned_det_face_im,
-                    direction=options["direction"],
-                    roi_coverage=options["roi_coverage"],
-                    color_correction=options["use_color_correction"],
-                    image_shape=options["IMAGE_SHAPE"]
+                    direction=options.direction,
+                    roi_coverage=options.roi_coverage,
+                    color_correction=options.use_color_correction,
+                    image_shape=options.image_shape
                 )
 
                 # reverse alignment
@@ -204,10 +203,10 @@ class VideoConverter(object):
 
                 result, _, result_a = self._face_transformer.transform(
                     det_face_im,
-                    direction=options["direction"],
-                    roi_coverage=options["roi_coverage"],
-                    color_correction=options["use_color_correction"],
-                    image_shape=options["IMAGE_SHAPE"]
+                    direction=options.direction,
+                    roi_coverage=options.roi_coverage,
+                    color_correction=options.use_color_correction,
+                    image_shape=options.image_shape
                 )
                 pass
 
@@ -217,8 +216,8 @@ class VideoConverter(object):
              :] = result
 
             # Enhance output
-            if options["enhance"] != 0:
-                comb_img = -1 * options["enhance"] * get_init_comb_img(input_img) + (1 + options["enhance"]) * comb_img
+            if options.enhance != 0:
+                comb_img = -1 * options.enhance * get_init_comb_img(input_img) + (1 + options.enhance) * comb_img
                 comb_img = np.clip(comb_img, 0, 255)
                 pass
 
@@ -238,31 +237,12 @@ class VideoConverter(object):
             triple_img[:, input_img.shape[1] * 2:, :] = mask_map
             pass
 
-        if options["output_type"] == 1:
-            return comb_img[:, input_img.shape[1]:, :]  # return only result image
-        elif options["output_type"] == 2:
-            return comb_img  # return input and result image combined as one
-        elif options["output_type"] == 3:
-            return triple_img  # return input, result and mask heatmap image combined as one
-        pass
-
-    @staticmethod
-    def _check_options(options):
-        if options["roi_coverage"] <= 0 or options["roi_coverage"] >= 1:
-            raise ValueError(f"roi_coverage should be between 0 and 1 (exclusive).")
-        if options["bbox_moving_avg_coef"] < 0 or options["bbox_moving_avg_coef"] > 1:
-            raise ValueError(f"bbox_moving_avg_coef should be between 0 and 1 (inclusive).")
-        if options["detec_threshold"] < 0 or options["detec_threshold"] > 1:
-            raise ValueError(f"detec_threshold should be between 0 and 1 (inclusive).")
-        if options["use_smoothed_bbox"] not in [True, False]:
-            raise ValueError(f"use_smoothed_bbox should be a boolean.")
-        if options["use_kalman_filter"] not in [True, False]:
-            raise ValueError(f"use_kalman_filter should be a boolean.")
-        if options["use_auto_downscaling"] not in [True, False]:
-            raise ValueError(f"use_auto_downscaling should be a boolean.")
-        if options["output_type"] not in range(1, 4):
-            ot = options["output_type"]
-            raise ValueError(f"Received an unknown output_type option: {ot}.")
+        if options.output_type == ImageOutputType.SINGLE:
+            return comb_img[:, input_img.shape[1]:, :]
+        elif options.output_type == ImageOutputType.COMBINED:
+            return comb_img
+        elif options.output_type == ImageOutputType.TRIPLE:
+            return triple_img
         pass
 
     def _get_smoothed_coord(self, x0, x1, y0, y1, img_shape, use_kalman_filter=True, ratio=0.65):
