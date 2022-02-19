@@ -1,8 +1,7 @@
-import enum
-
 import cv2
 import numpy as np
 
+from .options import TransformDirection
 from .color_correction import (
     adain,
     color_hist_match
