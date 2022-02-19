@@ -1,10 +1,77 @@
 import os
+import warnings
+import inspect
+import functools
 
 import cv2
 import numpy as np
 import yaml
+from pathlib import Path
 from IPython.display import display
 from PIL import Image
+
+
+def makedirs(pathnames: list, parents=True, exist_ok=True):
+    for pathname in pathnames:
+        Path(pathname).mkdir(parents=parents, exist_ok=exist_ok)
+    pass
+
+
+def _save_img_path_maker(save_path, default_path):
+    spath = save_path if save_path is not None else default_path
+    makedirs([spath])
+    return spath
+
+
+def _squeeze_fn(img, path):
+    return np.squeeze(np.array([path([img[i:i + 1]]) for i in range(img.shape[0])]))
+
+
+# from https://stackoverflow.com/a/40301488
+def deprecated(reason):
+    if isinstance(reason, (type(b''), type(u''))):
+        def decorator(func1):
+            if inspect.isclass(func1):
+                fmt1 = "Call to deprecated class {name} ({reason})."
+            else:
+                fmt1 = "Call to deprecated function {name} ({reason})."
+                pass
+
+            @functools.wraps(func1)
+            def new_func1(*args, **kwargs):
+                warnings.simplefilter('always', DeprecationWarning)
+                warnings.warn(
+                    fmt1.format(name=func1.__name__, reason=reason),
+                    category=DeprecationWarning,
+                    stacklevel=2
+                )
+                warnings.simplefilter('default', DeprecationWarning)
+                return func1(*args, **kwargs)
+            return new_func1
+        return decorator
+    elif inspect.isclass(reason) or inspect.isfunction(reason):
+        func2 = reason
+
+        if inspect.isclass(func2):
+            fmt2 = "Call to deprecated class {name}."
+        else:
+            fmt2 = "Call to deprecated function {name}."
+
+        @functools.wraps(func2)
+        def new_func2(*args, **kwargs):
+            warnings.simplefilter('always', DeprecationWarning)
+            warnings.warn(
+                fmt2.format(name=func2.__name__),
+                category=DeprecationWarning,
+                stacklevel=2
+            )
+            warnings.simplefilter('default', DeprecationWarning)
+            return func2(*args, **kwargs)
+
+        return new_func2
+    else:
+        raise TypeError(repr(type(reason)))
+    pass
 
 
 def get_image_paths(directory):
@@ -51,7 +118,47 @@ def stack_images(images):
     ).reshape(new_shape)
 
 
-# noinspection DuplicatedCode
+def save_image(test_src, test_dst, path_src, path_dst, batch_size, 
+               is_mask=False, im_save_path=None, default_path="./"):
+    def _get_squeeze(t, p):
+      return (_squeeze_fn(t, p) * 2) - 1 if is_mask else _squeeze_fn(t, p)
+
+    save_path = _save_img_path_maker(im_save_path, default_path)
+
+    figure1 = np.stack([
+        test_src,
+        _get_squeeze(test_src, path_src),
+        _get_squeeze(test_src, path_dst),
+    ], axis=1)
+    figure2 = np.stack([
+        test_dst,
+        _get_squeeze(test_dst, path_dst),
+        _get_squeeze(test_dst, path_src),
+    ], axis=1)
+
+    figure = np.concatenate([figure1, figure2], axis=0)
+    figure = figure.reshape((4, batch_size // 2) + figure.shape[1:])
+    figure = stack_images(figure)
+    figure = np.clip((figure + 1) * 255 / 2, 0, 255).astype('uint8')
+    figure = cv2.cvtColor(figure, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(figure)
+    if im_save_path is not None:
+        image.save(save_path)
+        pass
+    display(image)
+    pass
+
+
+def save_loss_data(save_path, d):
+    spath = _save_path_maker(save_path)
+    with open(f"{spath}/loss.txt", "a") as f:
+        print(d)
+        f.write(d)
+        pass
+    pass
+
+
+@deprecated("Deprecated in favor of save_image")
 def showG(test_src, test_dst, path_src, path_dst, batch_size):
     figure1 = np.stack([
         test_src,
@@ -73,7 +180,7 @@ def showG(test_src, test_dst, path_src, path_dst, batch_size):
     pass
 
 
-# noinspection DuplicatedCode
+@deprecated("Deprecated in favor of save_image")
 def showG_mask(test1, test2, path1, path2, batch_size):
     figure1 = np.stack([
         test1,
@@ -95,7 +202,6 @@ def showG_mask(test1, test2, path1, path2, batch_size):
     pass
 
 
-# noinspection DuplicatedCode
 def showG_eyes(test1, test2, bm_eyes1, bm_eyes2, batch_size):
     figure1 = np.stack([
         (test1 + 1) / 2,
