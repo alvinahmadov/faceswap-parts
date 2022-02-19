@@ -13,7 +13,7 @@ from IPython.display import display
 from PIL import Image
 
 
-class SwapOption(enum):
+class SwapOption(enum.Enum):
     DEFAULT=0
     EYES=1
     NOSE=2
