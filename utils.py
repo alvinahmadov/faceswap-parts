@@ -1,5 +1,6 @@
 import os
 import time
+import enum
 import warnings
 import inspect
 import functools
@@ -10,6 +11,14 @@ import yaml
 from pathlib import Path
 from IPython.display import display
 from PIL import Image
+
+
+class SwapOption(enum):
+    DEFAULT=0
+    EYES=1
+    NOSE=2
+    MOUTH=3
+    pass
 
 
 class CheckPoint:
