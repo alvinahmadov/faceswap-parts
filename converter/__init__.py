@@ -122,18 +122,15 @@ class VideoConverter:
             min_face_area=options.min_face_area
         )
 
-        mask_map = get_init_mask_map(image)
-        comb_img = None
-        triple_img = None
-
         # check if any face detected
         if len(faces) == 0:
-            comb_img = get_init_comb_img(input_img)
             triple_img = get_init_triple_img(input_img, no_face=True)
             pass
 
         # init. output image
         best_conf_score = 0
+        comb_img = get_init_comb_img(input_img)
+        mask_map = get_init_mask_map(image)
 
         # loop through all detected faces
         for i, (x0, y1, x1, y0, conf_score) in enumerate(faces):
