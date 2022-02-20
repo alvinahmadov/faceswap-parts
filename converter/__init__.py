@@ -1,7 +1,6 @@
 import numpy as np
 from moviepy.editor import VideoFileClip
 
-from .options import Options as VCOptions, ImageOutputType
 from .face_transformer import FaceTransformer
 from .kalman_filter import KalmanFilter
 from .landmarks_alignment import (
@@ -9,6 +8,7 @@ from .landmarks_alignment import (
     get_tar_landmarks,
     landmarks_match_mtcnn
 )
+from .options import Options as VCOptions, ImageOutputType
 from .utils import (
     get_init_mask_map,
     get_init_comb_img,
