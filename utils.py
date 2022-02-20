@@ -193,11 +193,12 @@ def stack_images(images):
 
 
 def save_image(test_src, test_dst, path_src, path_dst, batch_size,
-               is_mask=False, im_save_path=None, default_path="./"):
+               im_save_path, is_mask=False, filename="img"):
     def _get_squeeze(t, p):
         return (_squeeze_fn(t, p) * 2) - 1 if is_mask else _squeeze_fn(t, p)
 
-    save_path = _save_img_path_maker(im_save_path, default_path)
+    save_path = _save_img_path_maker(im_save_path, "./")
+    save_path = f"{save_path}/{filename}"
 
     figure1 = np.stack([
         test_src,
