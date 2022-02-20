@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from nn import FaceswapModel
 from .color_correction import adain, color_hist_match
 from .options import ColorCorrection, TransformDirection
 
@@ -9,7 +10,8 @@ class FaceTransformer:
     """
     Attributes:
         path_func: string, direction for the transformation: either AtoB or BtoA.
-        _model: the generator of the faceswap-GAN model
+        _model : nn.FaceswapModel
+         the generator of the faceswap-GAN model
     """
 
     def __init__(self):
@@ -36,9 +38,9 @@ class FaceTransformer:
         self.check_roi_coverage(input_image, roi_coverage)
 
         if direction == TransformDirection.AtoB:
-            self.path_func = self.model.path_abgr_B
+            self.path_func = self.model.path_abgr_dst
         elif direction == TransformDirection.BtoA:
-            self.path_func = self.model.path_abgr_A
+            self.path_func = self.model.path_abgr_src
         else:
             raise ValueError(f"direction should be either AtoB or BtoA, recieved {direction}.")
 
@@ -68,7 +70,7 @@ class FaceTransformer:
         return self._model
 
     @model.setter
-    def model(self, m):
+    def model(self, m: FaceswapModel):
         self._model = m
         pass
 
