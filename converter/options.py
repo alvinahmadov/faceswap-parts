@@ -24,7 +24,7 @@ class ColorCorrection(enum.Enum):
 class Options:
     def __init__(self, image_shape, use_smoothed_bbox=True, use_kalman_filter=True,
                  use_auto_downscaling=False, bbox_moving_avg_coef=0.65,
-                 min_face_area=35 * 35, kf_noise_coef=1e-3, color_correction="hist_match",
+                 min_face_area=35 * 35, kf_noise_coef=1e-3, color_correction=ColorCorrection.HISTMATCH,
                  detection_threshold=0.8, roi_coverage=0.9, enhance=0.0,
                  output_type=ImageOutputType.TRIPLE, direction=TransformDirection.AtoB):
         self.image_shape = image_shape
@@ -34,7 +34,7 @@ class Options:
         self.bbox_moving_avg_coef: float = bbox_moving_avg_coef
         self.min_face_area = min_face_area
         self.kf_noise_coef = kf_noise_coef
-        self.color_correction: str = color_correction
+        self.color_correction: ColorCorrection = color_correction
         self.detection_threshold: float = detection_threshold
         self.roi_coverage: float = roi_coverage
         self.enhance: float = enhance
