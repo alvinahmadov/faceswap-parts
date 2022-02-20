@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from .color_correction import adain, color_hist_match
-from .options import ColorCorrection
+from .options import ColorCorrection, TransformDirection
 
 
 class FaceTransformer:
@@ -35,9 +35,9 @@ class FaceTransformer:
         self.check_generator_model(self.model)
         self.check_roi_coverage(input_image, roi_coverage)
 
-        if direction == "AtoB":
+        if direction == TransformDirection.AtoB:
             self.path_func = self.model.path_abgr_B
-        elif direction == "BtoA":
+        elif direction == TransformDirection.BtoA:
             self.path_func = self.model.path_abgr_A
         else:
             raise ValueError(f"direction should be either AtoB or BtoA, recieved {direction}.")
