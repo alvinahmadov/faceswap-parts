@@ -233,6 +233,15 @@ def save_loss_data(save_path, d):
     pass
 
 
+def show_debug_window(image: np.ndarray, name="debug", width=600, height=600):
+    cv2.namedWindow(name)
+    cv2.resizeWindow(name, width, height)
+    cv2.imshow(name, image)
+    cv2.waitKey(0)
+    cv2.destroyWindow(name)
+    pass
+
+
 @deprecated("Deprecated in favor of save_image")
 def showG(test_src, test_dst, path_src, path_dst, batch_size):
     figure1 = np.stack([
