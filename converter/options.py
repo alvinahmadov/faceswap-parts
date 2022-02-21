@@ -15,14 +15,15 @@ class ImageOutputType(enum.Enum):
 
 
 class ColorCorrection(enum.Enum):
-    ADAIN = 0
-    ADAIN_XYZ = 1
-    HISTMATCH = 2
+    NONE = 0
+    ADAIN = 1
+    ADAIN_XYZ = 2
+    HISTMATCH = 3
     pass
 
 
 class Options:
-    def __init__(self, image_shape, use_smoothed_bbox=True, use_kalman_filter=True,
+    def __init__(self, image_shape=None, use_smoothed_bbox=True, use_kalman_filter=True,
                  use_auto_downscaling=False, bbox_moving_avg_coef=0.65,
                  min_face_area=35 * 35, kf_noise_coef=1e-3, color_correction=ColorCorrection.HISTMATCH,
                  detection_threshold=0.8, roi_coverage=0.9, enhance=0.0,
