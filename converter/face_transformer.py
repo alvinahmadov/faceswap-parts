@@ -14,9 +14,12 @@ class FaceTransformer:
          the generator of the faceswap-GAN model
     """
 
-    def __init__(self):
+    def __init__(self, arch_config: dict, model_path: str = None):
         self.path_func = None
-        self._model = None
+        self._model = FaceswapModel(**arch_config)
+
+        if model_path is not None and not self._model.weights_loaded:
+            self._model.load_weights(model_path)
 
         self.input_image = None
         self.input_size = None
