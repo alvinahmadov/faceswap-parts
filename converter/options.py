@@ -45,6 +45,13 @@ class Options:
         self._check_options()
         pass
 
+    def __repr__(self):
+        rep = "{\n"
+        for k, v in self.__dict__.items():
+            rep += f"\t{k}={v}\n"
+            pass
+        return rep + "}"
+
     def _check_options(self):
         if self.roi_coverage <= 0 or self.roi_coverage >= 1:
             raise ValueError(f"roi_coverage should be between 0 and 1 (exclusive).")
