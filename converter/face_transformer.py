@@ -6,6 +6,9 @@ from .color_correction import adain, color_hist_match
 from .options import ColorCorrection
 
 
+counter = 0
+
+
 class FaceTransformer:
     """
     Transforms face to face in image
@@ -129,7 +132,7 @@ class FaceTransformer:
 
     def _merge_img_and_mask(self, roi, roi_coverage):
         blend_mask = self.get_feather_edges_mask(roi, roi_coverage)
-        blended_img = blend_mask / 255 * self.ae_output_masked + (1 - blend_mask / 255) * roi
+        blended_img = (blend_mask / 255 * self.ae_output_masked) + (1 - blend_mask / 255) * roi
         roi_x, roi_y = int(self.input_size[0] * (1 - roi_coverage)), int(self.input_size[1] * (1 - roi_coverage))
         self.result = self.img_bgr.copy()
         self.result[roi_x:-roi_x, roi_y:-roi_y, :] = blended_img
