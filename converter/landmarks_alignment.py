@@ -12,22 +12,20 @@ AVERAGE_LANDMARKS = [
 ]
 
 
-def get_src_landmarks(x0, x1, y0, y1, pnts):
+def get_src_landmarks(x0, y0, pnts, face_idx=0):
     """
     Parameters
     ------
     x0 : int
      X start coordinate of bounding box
-    x1 : int
-     X end coordinate of bounding box
     y0 : int
      Y start coordinate of bounding box
-    y1 : int
-     Y end coordinate of bounding box
     pnts :
      Landmarks predicted by MTCNN
+    face_idx : int
     """
-    src_landmarks = [(int(pnts[i + 5][0] - x0), int(pnts[i][0] - y0)) for i in range(5)]
+    src_landmarks = [(int(pnts[i + 5][face_idx] - x0),
+                      int(pnts[i][face_idx] - y0)) for i in range(5)]
     return src_landmarks
 
 
