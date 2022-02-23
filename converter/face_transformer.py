@@ -6,9 +6,6 @@ from .color_correction import adain, color_hist_match
 from .options import ColorCorrection
 
 
-counter = 0
-
-
 class FaceTransformer:
     """
     Transforms face to face in image
@@ -111,9 +108,7 @@ class FaceTransformer:
         ae_output_a = cv2.resize(ae_output_a, (self.roi_size[1], self.roi_size[0]))[..., np.newaxis]
         ae_output_bgr = np.clip((self.ae_output[:, :, 1:] + 1) * 255 / 2, 0, 255)
         ae_output_bgr = cv2.resize(ae_output_bgr, (self.roi_size[1], self.roi_size[0]))
-        ae_output_masked = (
-                ae_output_a / 255 * ae_output_bgr + (1 - ae_output_a / 255) * roi
-        ).astype('uint8')  # BGR, [0, 255]
+        ae_output_masked = (ae_output_a / 255 * ae_output_bgr + (1 - ae_output_a / 255) * roi).astype('uint8')
         self.ae_output_a = ae_output_a
         if color_correction == ColorCorrection.ADAIN:
             self.ae_output_masked = adain(ae_output_masked, roi)
