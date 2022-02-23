@@ -1,20 +1,31 @@
 import enum
 
 
-class TransformDirection(enum.Enum):
+class TransformDirection(enum.IntEnum):
     AtoB = 0,
     BtoA = 1
     pass
 
 
-class ImageOutputType(enum.Enum):
+class ImageOutputType(enum.IntEnum):
     SINGLE = 0  # return only result image
     COMBINED = 1  # return input and result image combined as one
     TRIPLE = 3  # return input, result and mask heatmap image combined as one
     pass
 
 
-class ColorCorrection(enum.Enum):
+class SegmOption(enum.IntEnum):
+    ALL = 0
+    EYES_ONLY = 1
+    NOSE_ONLY = 2
+    MOUTH_ONLY = 3
+    EYES_AND_MOUTH = 4
+    EYES_AND_NOSE = 5
+    MOUTH_AND_NOSE = 6
+    pass
+
+
+class ColorCorrection(enum.IntEnum):
     NONE = 0
     ADAIN = 1
     ADAIN_XYZ = 2
