@@ -3,19 +3,19 @@ import numpy as np
 
 from nn import FaceswapModel
 from .color_correction import adain, color_hist_match
-from .options import ColorCorrection, TransformDirection
+from .options import ColorCorrection
 
 
 class FaceTransformer:
     """
+    Transforms face to face in image
+
     Attributes:
-        path_func: string, direction for the transformation: either AtoB or BtoA.
         _model : nn.FaceswapModel
          the generator of the faceswap-GAN model
     """
 
     def __init__(self, arch_config: dict, model_path: str = None):
-        self.path_func = None
         self._model = FaceswapModel(**arch_config)
 
         if model_path is not None and not self._model.weights_loaded:
@@ -39,32 +39,19 @@ class FaceTransformer:
     def transform(self, input_image, direction, roi_coverage, color_correction, image_shape):
         self.check_generator_model(self.model)
         self.check_roi_coverage(input_image, roi_coverage)
-
-        if direction == TransformDirection.AtoB:
-            self.path_func = self.model.path_abgr_dst
-        elif direction == TransformDirection.BtoA:
-            self.path_func = self.model.path_abgr_src
-        else:
-            raise ValueError(f"direction should be either AtoB or BtoA, recieved {direction}.")
-
         self.input_image = input_image
 
         # pre-process input image
-        # Set 5 members: self.img_bgr, self.input_size, self.roi, self.roi_size, self.ae_input
-        self._preprocess_inp_img(self.input_image, roi_coverage, image_shape)
+        self._preprocess_inp_img(roi_coverage, image_shape)
 
         # model inference
-        # Set 1 member: self.ae_output
-        self._ae_forward_pass(self.ae_input)
+        self._ae_forward_pass(direction)
 
         # post-process transformed roi image
-        # Set 3 members: self.ae_output_a, self.ae_output_masked, self.ae_output_bgr
-        self._postprocess_roi_img(self.ae_output, self.roi, self.roi_size, color_correction)
+        self._postprocess_roi_img(self.roi, color_correction)
 
         # merge transformed output back to input image
-        # Set 3 members: self.result, self.result_raw_rgb, self.result_alpha
-        self._merge_img_and_mask(self.ae_output_bgr, self.ae_output_masked,
-                                 self.input_size, self.roi, roi_coverage)
+        self._merge_img_and_mask(self.roi, roi_coverage)
 
         return self.result, self.result_raw_rgb, self.result_alpha
 
@@ -78,10 +65,11 @@ class FaceTransformer:
         pass
 
     @staticmethod
-    def get_feather_edges_mask(img, roi_coverage):
-        img_size = img.shape
-        mask = np.zeros_like(img)
-        roi_x, roi_y = int(img_size[0] * (1 - roi_coverage)), int(img_size[1] * (1 - roi_coverage))
+    def get_feather_edges_mask(image, roi_coverage):
+        img_size = image.shape
+        mask = np.zeros_like(image)
+        roi_x, roi_y = (int(img_size[0] * (1 - roi_coverage)),
+                        int(img_size[1] * (1 - roi_coverage)))
         mask[roi_x:-roi_x, roi_y:-roi_y, :] = 255
         mask = cv2.GaussianBlur(mask, (15, 15), 10)
         return mask
@@ -101,8 +89,8 @@ class FaceTransformer:
             Consider increasing min_face_area or decreasing roi_coverage.")
         pass
 
-    def _preprocess_inp_img(self, inp_img, roi_coverage, image_shape):
-        self.img_bgr = cv2.cvtColor(inp_img, cv2.COLOR_RGB2BGR)
+    def _preprocess_inp_img(self, roi_coverage, image_shape):
+        self.img_bgr = cv2.cvtColor(self.input_image, cv2.COLOR_RGB2BGR)
         self.input_size = self.img_bgr.shape
         roi_x, roi_y = int(self.input_size[0] * (1 - roi_coverage)), int(self.input_size[1] * (1 - roi_coverage))
         self.roi = self.img_bgr[roi_x:-roi_x, roi_y:-roi_y, :]  # BGR, [0, 255]
@@ -110,16 +98,16 @@ class FaceTransformer:
         self.ae_input = cv2.resize(self.roi, image_shape[:2]) / 255. * 2 - 1  # BGR, [-1, 1]
         pass
 
-    def _ae_forward_pass(self, ae_input):
-        ae_out = self.path_func([[ae_input]])
+    def _ae_forward_pass(self, direction):
+        ae_out = self.model.transform(self.ae_input, direction)
         self.ae_output = np.squeeze(np.array([ae_out]))
         pass
 
-    def _postprocess_roi_img(self, ae_output: np.ndarray, roi, roi_size, color_correction):
-        ae_output_a = ae_output[:, :, 0] * 255
-        ae_output_a = cv2.resize(ae_output_a, (roi_size[1], roi_size[0]))[..., np.newaxis]
-        ae_output_bgr = np.clip((ae_output[:, :, 1:] + 1) * 255 / 2, 0, 255)
-        ae_output_bgr = cv2.resize(ae_output_bgr, (roi_size[1], roi_size[0]))
+    def _postprocess_roi_img(self, roi, color_correction):
+        ae_output_a = self.ae_output[:, :, 0] * 255
+        ae_output_a = cv2.resize(ae_output_a, (self.roi_size[1], self.roi_size[0]))[..., np.newaxis]
+        ae_output_bgr = np.clip((self.ae_output[:, :, 1:] + 1) * 255 / 2, 0, 255)
+        ae_output_bgr = cv2.resize(ae_output_bgr, (self.roi_size[1], self.roi_size[0]))
         ae_output_masked = (
                 ae_output_a / 255 * ae_output_bgr + (1 - ae_output_a / 255) * roi
         ).astype('uint8')  # BGR, [0, 255]
@@ -139,15 +127,15 @@ class FaceTransformer:
             pass
         pass
 
-    def _merge_img_and_mask(self, ae_output_bgr, ae_output_masked, input_size, roi, roi_coverage):
+    def _merge_img_and_mask(self, roi, roi_coverage):
         blend_mask = self.get_feather_edges_mask(roi, roi_coverage)
-        blended_img = blend_mask / 255 * ae_output_masked + (1 - blend_mask / 255) * roi
+        blended_img = blend_mask / 255 * self.ae_output_masked + (1 - blend_mask / 255) * roi
+        roi_x, roi_y = int(self.input_size[0] * (1 - roi_coverage)), int(self.input_size[1] * (1 - roi_coverage))
         self.result = self.img_bgr.copy()
-        roi_x, roi_y = int(input_size[0] * (1 - roi_coverage)), int(input_size[1] * (1 - roi_coverage))
         self.result[roi_x:-roi_x, roi_y:-roi_y, :] = blended_img
-        self.result_raw_rgb = self.img_bgr.copy()
-        self.result_raw_rgb[roi_x:-roi_x, roi_y:-roi_y, :] = ae_output_bgr
         self.result = cv2.cvtColor(self.result, cv2.COLOR_BGR2RGB)
+        self.result_raw_rgb = self.img_bgr.copy()
+        self.result_raw_rgb[roi_x:-roi_x, roi_y:-roi_y, :] = self.ae_output_bgr
         self.result_raw_rgb = cv2.cvtColor(self.result_raw_rgb, cv2.COLOR_BGR2RGB)
         self.result_alpha = np.zeros_like(self.img_bgr)
         self.result_alpha[roi_x:-roi_x, roi_y:-roi_y, :] = (blend_mask / 255) * self.ae_output_a
