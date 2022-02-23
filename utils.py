@@ -13,14 +13,6 @@ from IPython.display import display
 from PIL import Image
 
 
-class SwapOption(enum.Enum):
-    DEFAULT = 0
-    EYES = 1
-    NOSE = 2
-    MOUTH = 3
-    pass
-
-
 class CheckPoint:
     def __init__(self, filename):
         self._time = 0.0
@@ -239,6 +231,18 @@ def show_debug_window(image: np.ndarray, name="debug", width=600, height=600):
     cv2.imshow(name, image)
     cv2.waitKey(0)
     cv2.destroyWindow(name)
+    pass
+
+
+def save_debug_img(image: np.ndarray, filename="debug.png"):
+    if len(filename.split('.')) == 1:
+        filename += ".png"
+        pass
+    try:
+        cv2.imwrite(filename, image)
+    except IOError as e:
+        print("Couldn't save image " + filename)
+        pass
     pass
 
 
