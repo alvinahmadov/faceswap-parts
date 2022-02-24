@@ -1,14 +1,14 @@
+import functools
+import inspect
+import logging
 import os
 import time
-import enum
 import warnings
-import inspect
-import functools
+from pathlib import Path
 
 import cv2
 import numpy as np
 import yaml
-from pathlib import Path
 from IPython.display import display
 from PIL import Image
 
@@ -76,6 +76,39 @@ class CheckPoint:
     pass
 
 
+class DummyLogger(logging.Logger):
+    """
+    Dummy class to disable logging from env variable
+    """
+
+    def __init__(self, name="dummy"):
+        super(DummyLogger, self).__init__(name)
+        pass
+
+    def log(self, level, msg, *args, **kwargs) -> None:
+        pass
+
+    def info(self, msg, *args, **kwargs) -> None:
+        pass
+
+    def debug(self, msg, *args, **kwargs) -> None:
+        pass
+
+    def warning(self, msg, *args, **kwargs) -> None:
+        pass
+
+    def warn(self, msg, *args, **kwargs) -> None:
+        pass
+
+    def error(self, msg, *args, **kwargs):
+        return super().error(msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        return super().critical(msg, *args, **kwargs)
+
+    pass
+
+
 def makedirs(pathnames: list, parents=True, exist_ok=True):
     for pathname in pathnames:
         Path(pathname).mkdir(parents=parents, exist_ok=exist_ok)
@@ -112,7 +145,9 @@ def deprecated(reason):
                 )
                 warnings.simplefilter('default', DeprecationWarning)
                 return func1(*args, **kwargs)
+
             return new_func1
+
         return decorator
     elif inspect.isclass(reason) or inspect.isfunction(reason):
         func2 = reason
