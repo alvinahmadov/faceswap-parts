@@ -9,13 +9,13 @@ from detector import mtcnn
 
 
 class MTCNNFaceDetector:
-    def __init__(self, sess, model_path="./mtcnn_weights/"):
+    def __init__(self, session=None, model_path=None):
         """
         Loads the MTCNN network and performs face detection.
 
         Parameters
         ----------
-        sess :
+        session :
          tensorflow session
         model_path : str
          path to the trained models for mtcnn
@@ -23,7 +23,9 @@ class MTCNNFaceDetector:
         self.pnet: mtcnn.Network
         self.rnet: mtcnn.Network
         self.onet: mtcnn.Network
-        self._create(sess, model_path)
+        self.session = session if session is not None else K.get_session()
+        self.model_path = model_path
+        self._create()
         pass
 
     def detect_face(self, image, minsize=20, threshold=0.7, factor=0.709,
@@ -152,35 +154,28 @@ class MTCNNFaceDetector:
     def is_higher_than_1080p(x):
         return (x.shape[0] * x.shape[1]) >= (1920 * 1080)
 
-    def _create(self, sess, model_path):
+    def _create(self):
         """
         Creates MTCNN Network
-
-        Parameters
-        ----------
-        sess: tf.Session
-         the current TensorFlow session
-        model_path: str
-         path to models for network
         """
-        if not model_path:
-            model_path, _ = os.path.split(os.path.realpath(__file__))
+        if not self.model_path:
+            self.model_path, _ = os.path.split(os.path.realpath(__file__))
             pass
 
         with tf.variable_scope('pnet'):
             data = tf.placeholder(shape=(None, None, None, 3), dtype=tf.float32, name='input')
             pnet = mtcnn.PNet({'data': data})
-            pnet.load(os.path.join(model_path, 'det1.npy'), sess)
+            pnet.load(os.path.join(self.model_path, 'det1.npy'), self.session)
             pass
         with tf.variable_scope('rnet'):
             data = tf.placeholder(shape=(None, 24, 24, 3), dtype=tf.float32, name='input')
             rnet = mtcnn.RNet({'data': data})
-            rnet.load(os.path.join(model_path, 'det2.npy'), sess)
+            rnet.load(os.path.join(self.model_path, 'det2.npy'), self.session)
             pass
         with tf.variable_scope('onet'):
             data = tf.placeholder(shape=(None, 48, 48, 3), dtype=tf.float32, name='input')
             onet = mtcnn.ONet({'data': data})
-            onet.load(os.path.join(model_path, 'det3.npy'), sess)
+            onet.load(os.path.join(self.model_path, 'det3.npy'), self.session)
             pass
 
         self.pnet = K.function(
