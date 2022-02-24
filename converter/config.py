@@ -22,9 +22,12 @@ class SegmentationType(enum.IntEnum):
     EYEBROWS_ONLY = 2
     NOSE_ONLY = 3
     MOUTH_ONLY = 4
-    EYES_AND_MOUTH = 5
-    EYES_AND_NOSE = 6
-    MOUTH_AND_NOSE = 7
+    EYES_AND_EYEBROWS = 5
+    EYES_AND_MOUTH = 6
+    EYES_AND_NOSE = 7
+    EYEBROWS_AND_NOSE = 8
+    MOUTH_AND_NOSE = 9
+    MOUTH_AND_EYEBROWS = 10
     pass
 
 
