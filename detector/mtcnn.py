@@ -23,7 +23,6 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from six import string_types, iteritems
 
 """Source: https://github.com/davidsandberg/facenet/blob/master/src/align/"""
 
@@ -100,7 +99,7 @@ class Network:
 
         for op_name in data_dict:
             with tf.variable_scope(op_name, reuse=True):
-                for param_name, data in iteritems(data_dict[op_name]):
+                for param_name, data in iter(data_dict[op_name].items()):
                     try:
                         var = tf.get_variable(param_name)
                         session.run(var.assign(data))
@@ -121,7 +120,7 @@ class Network:
         assert len(args) != 0
         self.terminals = []
         for fed_layer in args:
-            if isinstance(fed_layer, string_types):
+            if isinstance(fed_layer, str):
                 try:
                     fed_layer = self.layers[fed_layer]
                 except KeyError:
@@ -361,8 +360,6 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
         pass
 
     numbox = total_boxes.shape[0]
-    dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph = pad(total_boxes.copy(), w, h)
-
     if numbox > 0:
         pick = nms(total_boxes.copy(), 0.7, 'Union')
         total_boxes = total_boxes[pick, :]
@@ -388,8 +385,7 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
             if tmp.shape[0] > 0 and tmp.shape[1] > 0 or tmp.shape[0] == 0 and tmp.shape[1] == 0:
                 tempimg[:, :, :, k] = imresample(tmp, (24, 24))
             else:
-                return np.empty(0)
-            pass
+                return np.empty()
         tempimg = (tempimg - 127.5) * 0.0078125
         tempimg1 = np.transpose(tempimg, (3, 1, 0, 2))
         out = rnet([tempimg1])
@@ -419,7 +415,7 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
             if tmp.shape[0] > 0 and tmp.shape[1] > 0 or tmp.shape[0] == 0 and tmp.shape[1] == 0:
                 tempimg[:, :, :, k] = imresample(tmp, (48, 48))
             else:
-                return np.empty(0)
+                return np.empty()
             pass
         tempimg = (tempimg - 127.5) * 0.0078125
         tempimg1 = np.transpose(tempimg, (3, 1, 0, 2))
