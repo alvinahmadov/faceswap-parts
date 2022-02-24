@@ -1,5 +1,16 @@
+import enum
+
 import cv2
 import numpy as np
+
+
+class ColorCorrectionType(enum.IntEnum):
+    NONE = 0
+    ADAIN = 1
+    ADAIN_XYZ = 2
+    HISTMATCH = 3
+    pass
+
 
 """Color correction functions"""
 
@@ -39,33 +50,34 @@ def hist_match(source: np.ndarray, template):
     return interp_t_values[bin_idx].reshape(old_shape)
 
 
-def color_hist_match(src_im, tar_im, color_space="RGB"):
+def color_hist_match(img_a, img_b, color_space="RGB"):
     if color_space.lower() != "rgb":
-        src_im = trans_color_space(src_im, color_space)
-        tar_im = trans_color_space(tar_im, color_space)
+        img_a = trans_color_space(img_a, color_space)
+        img_b = trans_color_space(img_b, color_space)
         pass
 
-    matched_r = hist_match(src_im[:, :, 0], tar_im[:, :, 0])
-    matched_g = hist_match(src_im[:, :, 1], tar_im[:, :, 1])
-    matched_b = hist_match(src_im[:, :, 2], tar_im[:, :, 2])
+    matched_r = hist_match(img_a[:, :, 0], img_b[:, :, 0])
+    matched_g = hist_match(img_a[:, :, 1], img_b[:, :, 1])
+    matched_b = hist_match(img_a[:, :, 2], img_b[:, :, 2])
     matched = np.stack((matched_r, matched_g, matched_b), axis=2).astype(np.float32)
     matched = np.clip(matched, 0, 255)
     return matched
 
 
-def adain(src_im, tar_im, eps=1e-7, color_space="RGB"):
+def adain(img_a, img_b, eps=1e-7, color_space="RGB"):
     # https://github.com/ftokarev/tf-adain/blob/master/adain/norm.py
     if color_space.lower() != "rgb":
-        src_im = trans_color_space(src_im, color_space)
-        tar_im = trans_color_space(tar_im, color_space)
+        img_a = trans_color_space(img_a, color_space)
+        img_b = trans_color_space(img_b, color_space)
         pass
 
-    mt = np.mean(tar_im, axis=(0, 1))
-    st = np.std(tar_im, axis=(0, 1))
-    ms = np.mean(src_im, axis=(0, 1))
-    ss = np.std(src_im, axis=(0, 1))
-    if ss.any() <= eps: return src_im
-    result = st * (src_im.astype(np.float32) - ms) / (ss + eps) + mt
+    mt = np.mean(img_b, axis=(0, 1))
+    st = np.std(img_b, axis=(0, 1))
+    ms = np.mean(img_a, axis=(0, 1))
+    ss = np.std(img_a, axis=(0, 1))
+    if ss.any() <= eps:
+        return img_a
+    result = st * (img_a.astype(np.float32) - ms) / (ss + eps) + mt
     result = np.clip(result, 0, 255)
 
     if color_space.lower() != "rgb":
