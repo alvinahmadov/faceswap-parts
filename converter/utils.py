@@ -2,6 +2,36 @@ import cv2
 import numpy as np
 
 
+def draw_landmarks(image, landmarks: list, filename: str):
+    color = (0, 255, 0)
+    for i, lm in enumerate(landmarks):
+        _image = cv2.circle(image, (lm[1], lm[0]), 2, color, -1)
+        _image = cv2.putText(_image, str(i), (lm[1], lm[0]), cv2.FONT_HERSHEY_PLAIN, 1, color, 2)
+        cv2.imwrite(filename, _image)
+    pass
+
+
+def fillzeros(fname, maxlen=3, ext=".png"):
+    def _fill(ln, ch='0'):
+        if len(ln) < maxlen:
+            c = maxlen - len(ln)
+            ln = ch * c + ln
+            return ln
+        else:
+            return fname
+        pass
+
+    if isinstance(fname, str):
+        return _fill(fname)
+        pass
+    elif isinstance(fname, int):
+        return _fill(str(fname))
+        pass
+    else:
+        return fname
+    pass
+
+
 def get_init_mask_map(image):
     return np.zeros_like(image)
 
