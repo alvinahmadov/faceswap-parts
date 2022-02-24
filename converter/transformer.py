@@ -2,8 +2,7 @@ import cv2
 import numpy as np
 
 from nn import FaceswapModel
-from .color_correction import adain, color_hist_match
-from .options import ColorCorrection
+from .color_correction import adain, color_hist_match, ColorCorrectionType
 
 
 class FaceTransformer:
@@ -110,13 +109,13 @@ class FaceTransformer:
         ae_output_bgr = cv2.resize(ae_output_bgr, (self.roi_size[1], self.roi_size[0]))
         ae_output_masked = (ae_output_a / 255 * ae_output_bgr + (1 - ae_output_a / 255) * roi).astype('uint8')
         self.ae_output_a = ae_output_a
-        if color_correction == ColorCorrection.ADAIN:
+        if color_correction == ColorCorrectionType.ADAIN:
             self.ae_output_masked = adain(ae_output_masked, roi)
             self.ae_output_bgr = adain(ae_output_bgr, roi)
-        elif color_correction == ColorCorrection.ADAIN_XYZ:
+        elif color_correction == ColorCorrectionType.ADAIN_XYZ:
             self.ae_output_masked = adain(ae_output_masked, roi, color_space="XYZ")
             self.ae_output_bgr = adain(ae_output_bgr, roi, color_space="XYZ")
-        elif color_correction == ColorCorrection.HISTMATCH:
+        elif color_correction == ColorCorrectionType.HISTMATCH:
             self.ae_output_masked = color_hist_match(ae_output_masked, roi)
             self.ae_output_bgr = color_hist_match(ae_output_bgr, roi)
         else:
