@@ -4,7 +4,7 @@ from keras.layers import Lambda, concatenate
 from keras.models import Model
 from keras.optimizers import Adam
 
-from converter.options import TransformDirection
+from converter.config import TransformDirection
 from nn.losses import (
     first_order, cyclic_loss, adversarial_loss,
     reconstruction_loss, edge_loss, perceptual_loss
