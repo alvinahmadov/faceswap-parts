@@ -1,4 +1,4 @@
-tensorflow==1.8.0
+tensorflow==1.15.5
 h5py==2.10.0
 opencv-python
 Keras==2.1.5
@@ -8,5 +8,6 @@ imageio==2.4.1
 matplotlib
 requests
 moviepy
+numpy==1.16.4
 Pillow
 PyYAML
