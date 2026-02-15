@@ -1,55 +1,44 @@
-# Генеративно-состязательная нейросеть (GAN) для подмены лиц
+# Generative Adversarial Network (GAN) for Face Swapping
 
-Добавление состязательных и перцептуальных (VGGface) функций потерь в архитектуру автоэнкодера дипфейков.
+Adding adversarial and perceptual (VGGface) loss functions to the deepfake autoencoder architecture.
 
-### Общее описание нейросети
+### General Network Description
 
-Алгоритм классического машинного обучения без учителя. Суть идеи состоит в комбинации двух нейросетей, при которой
-одновременно работает два алгоритма “генератор” и “дискриминатор”.
+An unsupervised machine learning algorithm. The core idea consists of combining two neural networks, where two algorithms work simultaneously: the "generator" and the "discriminator".
 
-**Дискриминатор**. Для распознавания используются сверточные нейронные сети (CNN). Задача дискриминатора – пытаться
-распознать созданный образ и определить ложная ли она.
+**Discriminator**. Convolutional Neural Networks (CNN) are used for recognition. The discriminator's task is to attempt to recognize the generated image and determine whether it is fake.
 
-**Генератор**. Формирование изображений начинается с генерации произвольного шума, на котором постепенно начинают
-проступать фрагменты искомого изображения. Задача генератора – генерировать образы заданной категории.
+**Generator**. Image generation begins with generating random noise, on which fragments of the desired image gradually begin to appear. The generator's task is to generate images of a given category.
 
-Таким образом эти две имеют состязательные отношени, при котором генератор во время обучения пытается сгенерировать
-реалистичные ложные данные для замены лица таким образом, чтобы дискриминативная сеть не смогла бы разпознать подмену
-лица. Таким образом обе сети тренируют друг друга до состояния оптимального равновесия, при котором генератор будет
-сгенерировать неотличимые от реальных данные, а дискриминатор более точно подтвердить ложность или истинность полученных
-данных.
+Thus, these two networks have an adversarial relationship, where the generator during training attempts to generate realistic fake data for face replacement in such a way that the discriminative network cannot recognize the face swap. In this way, both networks train each other until an optimal equilibrium is reached, where the generator will generate data indistinguishable from real data, and the discriminator will more accurately confirm the falsity or authenticity of the received data.
 
-####Обучение 
- - Для простого обучения вполне достаточно иметь 2 видео исходного и целевого лиц, а дальше алгоритмы определят лица в
-   видео ([FaceNet](https://github.com/davidsandberg/facenet)) и оптимально извлекать кадры с лицом, по этой причине в
-   кадре необходимо присутствие только и только одного лица.
- - Для лучших результатов подмены лица, количество итераций должно быть не меньше 18'000.
+#### Training
 
-_Ниже представлен один из этапов процесса [обучения](docs/train.md) 
-GAN нейросети для подмены лиц при различных итерациях обучения_:
+- For simple training, it is sufficient to have 2 videos of source and target faces, and then algorithms will detect faces in the video ([FaceNet](https://github.com/davidsandberg/facenet)) and optimally extract frames with faces. For this reason, only one face should be present in the frame.
+- For better face swap results, the number of iterations should be at least 18,000.
+
+_Below is one of the stages of the [training](docs/train.md) process of the GAN network for face swapping at various training iterations_:
 
 **7200**
 
-![Обучение при 7200 итерациях](docs/images/train/10k/7200/recon.png "Обучение при 7200 итерациях")
+![Training at 7200 iterations](docs/images/train/10k/7200/recon.png "Training at 7200 iterations")
 
 **7500**
 
-![Обучение при 7500 итерациях](docs/images/train/10k/7500/recon.png "Обучение при 7200 итерациях")
+![Training at 7500 iterations](docs/images/train/10k/7500/recon.png "Training at 7500 iterations")
 
 **21k**
 
-![Обучение при 21k итерациях](docs/images/train/20k_30k/21000/recon.png "Обучение при 7200 итерациях")
+![Training at 21k iterations](docs/images/train/20k_30k/21000/recon.png "Training at 21k iterations")
 
-График потерь:
+Loss graphs:
 
 ![](docs/images/train/loss/loss_ga.png)
 ![](docs/images/train/loss/loss_gb.png)
 ![](docs/images/train/loss/loss_da.png)
 ![](docs/images/train/loss/loss_db.png)
 
-Де
-
-### Архитектура сети
+### Network Architecture
 
 ![gan_arch2d](docs/images/arch/gan.png)
 
@@ -59,98 +48,78 @@ GAN нейросети для подмены лиц при различных и
 
 ![dis_arch3d](docs/images/arch/disc_arch3d.jpg)
 
-### Результаты применения подхода
+### Results of the Approach
 
-- **Улучшенное качество вывода:** Функция состязательных потерь улучшает качество реконструкции сгенерированных
-  изображений.
+- **Improved Output Quality:** The adversarial loss function improves the reconstruction quality of generated images.
 
-### Особенности
+### Features
 
-- **[VGGFace](https://github.com/rcmalli/keras-vggface) perceptual loss:** Функция перцептуальных потерь улучшает
-  направление глазных яблок, чтобы дыть более реалистичный и соответствовующий входному лицу выходной. Это также
-  сглаживает артефакты в маске сегментации, что приводит к повышению качества вывода.
+- **[VGGFace](https://github.com/rcmalli/keras-vggface) perceptual loss:** The perceptual loss function improves eyeball direction to produce more realistic output that matches the input face. It also smooths artifacts in the segmentation mask, resulting in improved output quality.
 
-- **`Attention mask`:** Модель предсказывает `attention mask`, которая помогает справиться с окклюзией, устраняя
-  артефакты и создавая естественный тон кожи.
+- **`Attention mask`:** The model predicts an `attention mask` that helps handle occlusion by eliminating artifacts and creating natural skin tone.
 
-- **Отслеживание/выравнивание лиц с использованием MTCNN и фильтра Калмана при преобразовании видео**:
-    - Используется сеть MTCNN для более стабильного обнаружения и надежного выравнивания лица.
-    - Фильтр Калмана сглаживает положение ограничивающей рамки (bounding) на кадрах и устраняет дрожание на заменяемом
-      лице.
-    - ![comp_FA](https://www.dropbox.com/s/kviue4065gdqfnt/comp_fa.gif?raw=1)
+- **Face tracking/alignment using MTCNN and Kalman filter for video conversion**:
+  - MTCNN network is used for more stable face detection and reliable face alignment.
+  - Kalman filter smooths the bounding box position across frames and eliminates jitter on the swapped face.
+  - ![comp_FA](https://www.dropbox.com/s/kviue4065gdqfnt/comp_fa.gif?raw=1)
 
-- **Обучение с учетом глаз:** Использование высоких значений `reconstruction loss` и `edge loss` в области глаз
-  позволяет модели создавать реалистичные глаза.
+- **Eye-aware training:** Using high values of `reconstruction loss` and `edge loss` in the eye region allows the model to create realistic eyes.
 
-## Замена частей лица
+## Face Parts Replacement
 
-#### Способ №1
+#### Method #1
 
-- Заменить только часть исходного лица (рот/нос/глаза) на целевое лицо, обрабатывая замененное лицо как расширенные
-  обучающие данные для исходного лица.
-- Для каждого исходного изображения лица аналогичное целевое лицо извлекается с помощью knn
-  (с использованием усредненной карты объектов в качестве входных данных) для замены частей лица.
-- Недостатки: 
-  - модель также учится генерировать артефакты, которые появляются в дополненных данных, например, острые края
-  вокруг глаз/носа и странно искаженное лицо.
-  - артефакты дополненных данных вызваны несовершенным смешиванием (из-за ложных ориентиров и плохого perspective warping).
-  - необходимо для каждой части лица выполнять обучение.
+- Replace only part of the source face (mouth/nose/eyes) with the target face, treating the swapped face as augmented training data for the source face.
+- For each source face image, a similar target face is extracted using knn (using averaged feature maps as input) for face parts replacement.
+- Disadvantages:
+  - The model also learns to generate artifacts that appear in the augmented data, such as sharp edges around the eyes/nose and strangely distorted faces.
+  - Artifacts in augmented data are caused by imperfect blending (due to false landmarks and poor perspective warping).
+  - Training must be performed for each face part separately.
 
 - ![](https://www.dropbox.com/s/1l9n1ple6ymxy8b/data_augm_flowchart.jpg?raw=1)
 
-#### Способ №2
+#### Method #2
 
-- Во время трансформации лица производим поиск ориентиров частей лица на кадре с помощью библиотеки `face-alignment` на
-  исходном лице;
-- Производим `convex hull` для расширения найденных точек в жирную линию;
-- Производим обрисовку контуров полученного `convex hull`
+- During face transformation, we search for face part landmarks on the frame using the `face-alignment` library on the source face;
+- We perform `convex hull` to expand the found points into a thick line;
+- We trace the contours of the obtained `convex hull`
 - ![](docs/images/arch/face_parts_mask_b.png)
-- Для того чтобы ненужные части лица были удалены, оставив только нужные, производим объединение исходного лица с
-  бинарным исходного лица;
+- To remove unwanted face parts, leaving only the needed ones, we combine the source face with the binary mask of the source face;
 - ![](docs/images/arch/face_parts_mask_face.png)
-- Производим снова masking и дальше проискодит замена лица.
+- We perform masking again and then face replacement occurs.
 - ![](docs/images/arch/partial_swapped_face.jpg)
 
 ## Google Colab
 
-[FaceswapGAN train](https://colab.research.google.com/github/alvinahmadov/faceswap-parts/blob/main/colab/faceswap-demo.ipynb)
-для faceswap на Google Colab.
+[FaceswapGAN train](https://colab.research.google.com/github/alvinahmadov/faceswap-parts/blob/main/colab/faceswap-demo.ipynb) for faceswap on Google Colab.
 
-Пользователи могут обучать свою собственную модель в браузере.
+Users can train their own model in the browser.
 
-* [faceswap_train.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_train.ipynb)
-    - Блокнот для обучения FaceswapGAN модели.
-    - Требуются дополнительные обучающие изображения, созданные с
-      помощью [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/prep_binary_masks.ipynb).
+- [faceswap_train.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_train.ipynb)
+  - Notebook for training FaceswapGAN model.
+  - Requires additional training images created using [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/prep_binary_masks.ipynb).
 
-* [faceswap_video_conversion.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_video_conversion.ipynb)
-    - Ноутбук для преобразования видео FaceswapGAN модели.
-    - Выравнивание лица с использованием 5-точечных ориентиров используется в преобразовании видео.
+- [faceswap_video_conversion.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_video_conversion.ipynb)
+  - Notebook for FaceswapGAN model video conversion.
+  - Face alignment using 5-point landmarks is used in video conversion.
 
-* [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb)
-    - Ноутбук для предварительной обработки обучающих данных. Выходные двоичные маски сохраняются
-      в `{dir}/binary_masks/face_src_eyes` и `{dir}/binary_masks/face_dst_eyes`.
-    - Требуется пакет [face_alignment](https://github.com/1adrianb/face-alignment). Альтернативный метод для генерации бинарных масок без требования библиотек `face_alignment` и `dlib`, находятся
-      в [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/video_face_detection_alignment.ipynb).
+- [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb)
+  - Notebook for preprocessing training data. Output binary masks are saved in `{dir}/binary_masks/face_src_eyes` and `{dir}/binary_masks/face_dst_eyes`.
+  - Requires [face_alignment](https://github.com/1adrianb/face-alignment) package. An alternative method for generating binary masks without requiring `face_alignment` and `dlib` libraries can be found in [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/video_face_detection_alignment.ipynb).
 
-* [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/video_face_detection_alignment.ipynb)
-    - Этот ноутбук выполняет распознавание/выравнивание лиц на входном видео.
-    - Обнаруженные лица сохраняются в `{dir}/faces/raw_faces` и `{dir}/faces/aligned_faces` для выровненных и без
-      результатов соответственно.
-    - Двоичные маски глаз также генерируются и сохраняются в `{dir}/faces/binary_masks_eyes`. Эти двоичные маски могут
-      служить субоптимальной альтернативой маскам, созданным с
-      помощью [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb).
+- [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/video_face_detection_alignment.ipynb)
+  - This notebook performs face detection/alignment on input video.
+  - Detected faces are saved in `{dir}/faces/raw_faces` and `{dir}/faces/aligned_faces` for aligned and unaligned results respectively.
+  - Binary eye masks are also generated and saved in `{dir}/faces/binary_masks_eyes`. These binary masks can serve as a suboptimal alternative to masks created using [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb).
 
-### Прочее
+### Other
 
-**Как использовать?**
+**How to use?**
 
-Выполняйте [faceswap-demo.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab_demo/faceswap-demo.ipynb)
-для реализации всех этапов FaceSwap в одном ноутбуке (в Google Colab).
+Run [faceswap-demo.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab_demo/faceswap-demo.ipynb) to implement all FaceSwap stages in one notebook (in Google Colab).
 
-_**Примечание:**_ Для хранения обучаемых данных рекомендуется использовать Google Drive или Google Storage. В ноутбуке
-есть необходимые инструкции.
-_**Примечание:**_ Для реализации проекта были выбраны не самые оптимальные параметры
+_**Note:**_ It is recommended to use Google Drive or Google Storage for storing training data. The notebook contains necessary instructions.
+_**Note:**_ The project implementation uses non-optimal parameters.
 
 ```python
 from converter.config import (
@@ -161,10 +130,10 @@ from converter.config import (
     SegmentationType
 )
 
-RESOLUTION=64 # возможно: 64, 128, 256
+RESOLUTION=64 # possible values: 64, 128, 256
 image_shape=(RESOLUTION, RESOLUTION, 3)
 
-# для обучения
+# for training
 arch_config = {
         "image_shape": image_shape,
         "use_self_attn": True,  # SAGAN
@@ -172,47 +141,41 @@ arch_config = {
         "model_capacity": "lite"  # 'standard', 'lite'
     }
 
-# для конвертации/замены
+# for conversion/replacement
 config = ConverterConfig(
-    image_shape=image_shape,  
+    image_shape=image_shape,
     use_smoothed_bbox=True,
     use_kalman_filter=True,
-    use_auto_downscaling=False,  # для понижения разрешения изображения
-    bbox_moving_avg_coef=0.65,  # если фильтры Кальмана отключены
-    min_face_area=35 * 35,  # минимально допустимая площадь лица для выбора 
-    kf_noise_coef=1e-3,  # коэфициент шума для фильтра Кальмана
-    color_correction=ColorCorrectionType.HISTMATCH,  # коррекция цвета для замены, чтобы убрать несоответствие цветов лиц
+    use_auto_downscaling=False,  # for image resolution downscaling
+    bbox_moving_avg_coef=0.65,  # if Kalman filters are disabled
+    min_face_area=35 * 35,  # minimum acceptable face area for selection
+    kf_noise_coef=1e-3,  # noise coefficient for Kalman filter
+    color_correction=ColorCorrectionType.HISTMATCH,  # color correction for replacement to remove face color mismatch
     detection_threshold=0.8,
-    roi_coverage=0.9,  # размер заменяемой части лица
-    output_type=ImageOutputType.COMBINED,  # SINGLE, COMBINED, TRIPLE - формат вывода результата
-    direction=TransformDirection.AtoB,  # направление для замены между двумя файлами
-    segmentation=SegmentationType.EYES_ONLY  # какие части лица заменить 
+    roi_coverage=0.9,  # size of the face part to be replaced
+    output_type=ImageOutputType.COMBINED,  # SINGLE, COMBINED, TRIPLE - result output format
+    direction=TransformDirection.AtoB,  # direction for replacement between two files
+    segmentation=SegmentationType.EYES_ONLY  # which face parts to replace
 )
 ```
 
-Вышеописанный ноутбук состоит из ячеек, взятых из следующих ноутбуков:
+The above notebook consists of cells taken from the following notebooks:
 
-- [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/video_face_detection_alignment.ipynb)
-  для извлечения лиц из видео.
-- [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb) для
-  создания двоичных масок обучающих изображений.
-- [faceswap_train.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_train.ipynb) для
-  обучения моделей.
-- [faceswap_video_conversion.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_video_conversion.ipynb)
-  для создания видео с использованием обученных моделей.
+- [video_face_detection_alignment.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/video_face_detection_alignment.ipynb) for extracting faces from video.
+- [prep_binary_masks.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/prep_binary_masks.ipynb) for creating binary masks of training images.
+- [faceswap_train.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_train.ipynb) for training models.
+- [faceswap_video_conversion.ipynb](https://github.com/alvinahmadov/faceswap-parts/blob/main/colab/faceswap_video_conversion.ipynb) for creating videos using trained models.
 
-**Примечание:** *Только для ознакомительных целей*.
+**Note:** _For educational purposes only_.
 
-### Формат обучающих данных
+### Training Data Format
 
-- Face images are supposed to be in `{dir}/face_src/` or `{dir}/face_dst/` folder for source and target respectively.
-- Изображения лиц должны находиться в папке `{dir}/face_src/` или `{dir}/face_dst/` для исходного и целевого лиц
-  соответственно.
-- Во время обучения размер изображений будет изменен до 256x256.
+- Face images are supposed to be in `{dir}/face_src/` or `{dir}/face_dst/` folder for source and target faces respectively.
+- During training, images will be resized to 256x256.
 
-## Ссылки на используемые алгоритмы
+## References to Used Algorithms
 
-### Алгоритмы
+### Algorithms
 
 - [GANotebooks](https://github.com/tjwei/GANotebooks)
 - [Keras-GAN](https://github.com/eriklindernoren/Keras-GAN/blob/master/aae/aae.py)
@@ -226,13 +189,10 @@ config = ConverterConfig(
 - [ICNR](https://github.com/kostyaev/ICNR)
 - [reddit user deepfakes' project](https://pastebin.com/hYaLNg1T)
 
-### Библиотека
+### Papers
 
 - Jun Fu et al. - [Dual Attention Network for Scene Segmentation](https://arxiv.org/pdf/1809.02983.pdf)
-- Han Zhang, Ian Goodfellow, Dimitris Metaxas, Augustus Odena
-  - [Self-Attention Generative Adversarial Network (SAGAN)](https://arxiv.org/pdf/1805.08318.pdf)
-- Taesung Park, Ming-Yu Liu, Ting-Chun Wang, Jun-Yan Zhu
-  - [Semantic Image Synthesis with Spatially-Adaptive Normalization (SPADE)](https://arxiv.org/abs/1903.07291)
+- Han Zhang, Ian Goodfellow, Dimitris Metaxas, Augustus Odena - [Self-Attention Generative Adversarial Network (SAGAN)](https://arxiv.org/pdf/1805.08318.pdf)
+- Taesung Park, Ming-Yu Liu, Ting-Chun Wang, Jun-Yan Zhu - [Semantic Image Synthesis with Spatially-Adaptive Normalization (SPADE)](https://arxiv.org/abs/1903.07291)
 - Jimmy Lei Ba, Jamie Ryan Kiros, Geoffrey E. Hinton - [Layer Normalization](https://arxiv.org/abs/1607.06450)
-- Dmitry Ulyanov, Andrea Vedaldi, Victor Lempitsky
-  - [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
+- Dmitry Ulyanov, Andrea Vedaldi, Victor Lempitsky - [Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
